@@ -13,15 +13,15 @@
 			--verbose
     ]]></command>
     <inputs>
-        <param type="data" name="input1" format="tabular" help='(-i)' />
-        <param type="data" name="input_mapping" format="tabular" help='A mapping file that maps each bin to its metagenome (--map)' />
-        <param type="integer" name="number" value="20" label="number of SGBs to display in the figure" help='(--top)' />
+        <param type="data" name="input1" format="tabular" help='(-i)'/>
+        <param type="data" name="input_mapping" format="tabular" help='A mapping file that maps each bin to its metagenome (--map)'/>
+        <param type="integer" name="number" value="20" label="number of SGBs to display in the figure" help='(--top)'/>
 		<param name="out_format" type="select" label="output image format" help='(-f)'>
 			<option value="pdf">pdf</option>
 			<option value="svg">svg</option>
 			<option value="png">png</option>
 		</param>
-        <param type="integer" name="dpi" value="200" label="dpi of output" help='(--dpi)' />
+        <param type="integer" name="dpi" value="200" label="dpi of output" help='(--dpi)'/>
     </inputs>
     <outputs>
         <data format="data" name="output1">
@@ -34,7 +34,11 @@
         <test>
             <param name="input1" value="output_metagenomic.tsv"/>
             <param name="input_mapping" value="bin2meta.tsv"/>
-            <output name="output1" file="output_heatmap"/>
+            <param name="number" value="20"/>
+            <param name="out_format" value="png"/>
+            <output name="output1" file="output_heatmap_counts.png">
+				<discovered_dataset designation="pres_abs" ftype="png" value="output_heatmap_pres_abs.png"/>
+			</output>
         </test>
     </tests>
     <help><![CDATA[
