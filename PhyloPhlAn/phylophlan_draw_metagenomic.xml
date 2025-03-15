@@ -1,0 +1,77 @@
+<tool id="phylophlan_draw_metagenomic" name="Visualize metagenomic SGBs as Heatmaps" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
+    <requirements>
+		<requirement type="package" version="3.1.1">phylophlan</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        phylophlan_draw_metagenomic
+			-i '$input1'
+			## -o '$output1'
+			--map '$input_mapping'
+			--top $number 
+			-f $out_format
+			--dpi $dpi
+			--verbose
+    ]]></command>
+    <inputs>
+        <param type="data" name="input1" format="tabular" help='(-i)' />
+        <param type="data" name="input_mapping" format="tabular" help='A mapping file that maps each bin to its metagenome (--map)' />
+        <param type="integer" name="number" value="20" label="number of SGBs to display in the figure" help='(--top)' />
+		<param name="out_format" type="select" label="output image format" help='(-f)'>
+			<option value="pdf">pdf</option>
+			<option value="svg">svg</option>
+			<option value="png">png</option>
+		</param>
+        <param type="integer" name="dpi" value="200" label="dpi of output" help='(--dpi)' />
+    </inputs>
+    <outputs>
+        <data format="data" name="output1">
+			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.pdf" format="pdf" visible="true" assign_primary_output="true" />
+			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.svg" format="svg" visible="true" assign_primary_output="true" />
+			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.png" format="png" visible="true" assign_primary_output="true" />
+		</data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="input1" value="output_metagenomic.tsv"/>
+            <param name="input_mapping" value="bin2meta.tsv"/>
+            <output name="output1" file="output_heatmap"/>
+        </test>
+    </tests>
+    <help><![CDATA[
+        usage: phylophlan_draw_metagenomic [-h] -i INPUT -m MAP [--top TOP]
+                                   [-o OUTPUT] [-s SEPARATOR] [--dpi DPI]
+                                   [-f F] [--citation] [--verbose] [-v]
+
+The phylophlan_draw_metagenomic.py script takes as input the output table
+generated form the phylophlan_metagenomic.py script and produces two heatmap
+figures: (1) presence/absence heatmap of the SGBs and the metagenomic samples
+of the recontructed input genomes; and (2) heatmap showing the amount of kSGB,
+uSGB, and unassinged for each metagenome
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        The input file generated from
+                        phylophlan_metagenomic.py (default: None)
+  -m MAP, --map MAP     A mapping file that maps each bin to its metagenome
+                        (default: None)
+  --top TOP             The number of SGBs to display in the figure (default:
+                        20)
+  -o OUTPUT, --output OUTPUT
+                        Prefix output files (default: output_heatmap)
+  -s SEPARATOR, --separator SEPARATOR
+                        The separator used in the mapping file (default: )
+  --dpi DPI             Dpi resolution of the images (default: 200)
+  -f F                  Images output format (default: svg)
+  --citation            Show citation
+  --verbose             Prints more stuff (default: False)
+  -v, --version         Prints the current phylophlan_draw_metagenomic.py
+                        version and exit
+
+    ]]></help>
+    <citations>
+        <citation type="doi">
+            10.1038/s41467-020-16366-7
+        </citation>
+    </citations>
+</tool>
