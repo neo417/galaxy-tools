@@ -1,0 +1,207 @@
+<tool id="phylophlan_write_config_file" name="Configure PhyloPhlAn" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
+    <description>
+        to use specific software libraries
+    </description>
+	<requirements>
+        <requirement type="package" version="3.1.1">phylophlan</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        phylophlan_write_config_file
+			-o '$output1'
+			-d $db.d
+			#if $db.db_dna
+				--db_dna $db.db_dna
+			#end if
+			#if $db.db_aa
+				--db_aa $db.db_aa
+			#end if
+			#if $db.map_dna
+				--map_dna $db.map_dna
+			#end if
+			#if $db.map_aa
+				--map_aa $db.map_aa
+			#end if
+			--msa $msa
+			#if $trim 
+			--trim trimal
+			#end if
+			#if $gene_tree.gene_tree1
+				--gene_tree1 $gene_tree.gene_tree1
+				#if $gene_tree.gene_tree2
+					--gene_tree2 $gene_tree.gene_tree2
+				#end if
+			#end if
+			--tree1 $tree.tree1
+			#if $tree.tree2
+				--tree2 raxml
+			#end if
+			#if $force_nucleotides
+			--force_nucleotides
+			#end if
+			--overwrite
+    ]]></command>
+    <inputs>
+		<conditional name="db">
+			<param type="select" argument="-d" label="Main Database Type" help="Depending on the choice, different fields become mandatory.">
+				<option value="n">Nucleotides</option>
+				<option value="a">Amino acids</option>
+			</param>
+			<when value="n">
+				<param type="select" argument="--db_dna" label="Nucleotides DB">
+					<option value="makeblastdb">makeblastdb</option>
+				</param>
+				<param type="select" argument="--db_aa" label="Amino acids DB" optional="true">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_dna" label="Map genomes">
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_aa" optional="true" label="Map proteomes">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+			</when>
+			<when value="a">
+				<param type="select" argument="--db_dna" label="Nucleotides DB" optional="true">
+					<option value="makeblastdb">makeblastdb</option>
+				</param>
+				<param type="select" argument="--db_aa" label="Amino acids DB">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_dna" optional="true" label="Map genomes">
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_aa" label="Map proteomes">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+			</when>
+		</conditional>
+		<param type="select" argument="--msa" label="multiple-sequence alignment">
+			<option value="muscle">muscle</option>
+			<option value="mafft">mafft</option>
+			<option value="opal">opal</option>
+			<option value="upp">upp</option>
+		</param>
+		<param type="boolean" argument="--trim" label="Remove gappy regions of the MSAs (trimal)"/>
+		<section name="gene_tree" title="Single-gene trees">
+			<param type="select" argument="--gene_tree1" optional="true" label="Build phylogenies">
+				<option value="fasttree">fasttree</option>
+				<option value="raxml">raxml</option>
+				<option value="iqtree">iqtree</option>
+			</param>
+			<param type="select" argument="--gene_tree2" optional="true" label="Refine phylogenies">
+				<option value="raxml">raxml</option>
+			</param>
+		</section>
+		<section name="tree" title="Phylogeny" expanded="true">
+			<param type="select" argument="--tree1" label="Build phylogeny">
+				<option value="fasttree">fasttree</option>
+				<option value="raxml">raxml</option>
+				<option value="iqtree">iqtree</option>
+				<option value="astral">astral</option>
+				<option value="astrid">astrid</option>
+			</param>
+			<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
+				<option value="raxml">raxml</option>
+			</param>
+		</section>
+		<param type="boolean" argument="--force_nucleotides" label="Always use nucleotide sequences for phylogenetic analysis"/>
+    </inputs>
+    <outputs>
+        <data name="output1" format="cfg" />
+    </outputs>
+    <tests>
+        <test>
+            <output name="output1" file="isolates_config.cfg"/>
+        </test>
+    </tests>
+    <help><![CDATA[
+        usage: phylophlan_write_config_file [-h] -o OUTPUT -d {n,a}
+                                    (--db_dna {makeblastdb} | --db_aa {usearch,diamond})
+                                    [--map_dna {blastn,tblastn,diamond}]
+                                    [--map_aa {usearch,diamond}] --msa
+                                    {muscle,mafft,opal,upp} [--trim {trimal}]
+                                    [--gene_tree1 {fasttree,raxml,iqtree}]
+                                    [--gene_tree2 {raxml}] --tree1
+                                    {fasttree,raxml,iqtree,astral,astrid}
+                                    [--tree2 {raxml}] [-a]
+                                    [--force_nucleotides] [--overwrite]
+                                    [--citation] [--verbose] [-v]
+
+The phylophlan_write_config_file.py script generates a configuration file to
+be used with the phylophlan.py script. It implements some standard parameters
+for the software integrated, but if needed, the parameters of the selected
+software can be added/modified/removed by editing the generated configuration
+file using a text editor
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Specify the output file where to write the
+                        configurations (default: None)
+  -d {n,a}, --db_type {n,a}
+                        Specify the type of the database, where "n" stands for
+                        nucleotides and "a" for amino acids (default: None)
+  --db_dna {makeblastdb}
+                        Add the "db_dna" section of the selected software that
+                        will be used for building the indexed database
+                        (default: None)
+  --db_aa {usearch,diamond}
+                        Add the "db_aa" section of the selected software that
+                        will be used for building the indexed database
+                        (default: None)
+  --map_dna {blastn,tblastn,diamond}
+                        Add the "map_dna" section of the selected software
+                        that will be used for mapping the database against the
+                        input genomes (default: None)
+  --map_aa {usearch,diamond}
+                        Add the "map_aa" section of the selected software that
+                        will be used for mapping the database against the
+                        input proteomes (default: None)
+  --msa {muscle,mafft,opal,upp}
+                        Add the "msa" section of the selected software that
+                        will be used for producing the MSAs (default: None)
+  --trim {trimal}       Add the "trim" section of the selected software that
+                        will be used for the gappy regions removal of the MSAs
+                        (default: None)
+  --gene_tree1 {fasttree,raxml,iqtree}
+                        Add the "gene_tree1" section of the selected software
+                        that will be used for building the phylogenies for the
+                        markers in the database (default: None)
+  --gene_tree2 {raxml}  Add the "gene_tree2" section of the selected software
+                        that will be used for refining the phylogenies
+                        previously built with what specified in the
+                        "gene_tree1" section (default: None)
+  --tree1 {fasttree,raxml,iqtree,astral,astrid}
+                        Add the "tree1" section of the selected software that
+                        will be used for building the first phylogeny
+                        (default: None)
+  --tree2 {raxml}       Add the "tree2" section of the selected software that
+                        will be used for refining the phylogeny previously
+                        built with what specified in the "tree1" section
+                        (default: None)
+  -a, --absolute_path   Write the absolute path to the executable instead of
+                        the executable name as found in the system path
+                        environment (default: False)
+  --force_nucleotides   If specified sets parameters for phylogenetic analysis
+                        software so that they use nucleotide sequences, even
+                        in the case of a database of amino acids (default:
+                        None)
+  --overwrite           Overwrite output file if it exists (default: False)
+  --citation            Show citation
+  --verbose             Prints more stuff (default: False)
+  -v, --version         Prints the current phylophlan_write_config_file.py
+                        version and exit
+
+    ]]></help>
+    <citations>
+        <citation type="doi">10.1038/s41467-020-16366-7</citation>
+    </citations>
+</tool>
