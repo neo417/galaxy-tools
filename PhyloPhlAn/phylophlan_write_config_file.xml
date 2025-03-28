@@ -115,7 +115,7 @@
 		<param type="boolean" argument="--force_nucleotides" label="Always use nucleotide sequences for phylogenetic analysis"/>
     </inputs>
     <outputs>
-        <data name="output1" format="cfg" />
+        <data name="output1" format="toml" />
     </outputs>
     <tests>
         <test>
