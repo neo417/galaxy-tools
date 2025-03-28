@@ -1,0 +1,58 @@
+<tool id="phylophlan_setup_database" name="Setup PhyloPhlAn Database" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
+    <description>
+        format multi-fasta file or download UniRef90 proteins
+    </description>
+	<requirements>
+        <requirement type="package" version="3.1.1">phylophlan</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+		#import re
+
+		phylophlan_setup_database
+			-o database
+			
+			#if $action.select == "d"
+				-g $action.g && mv database/${action.g}.faa database/${action.g}.fasta
+			#else if $action.select == "f"
+				-i $action.i
+				-x fasta
+				-d ${re.sub('[^\w\-_]', '_', str($action.i.element_identifier))}
+			#end if
+    ]]></command>
+    <inputs>
+		<conditional name="action">
+			<param type="select" name="select" label="Input">
+				<option value="d">Download UniRef90</option>
+				<option value="f">Format multi-fasta file</option>
+				<!-- Todo: input folder -> input extention (-e) is required for folders (here: collections) 
+				           -->
+			</param>
+			<when value="d">
+				<!-- Should I cache the taxa2core mapping (~200MB)? Otherwise the tool will download it every time this option is used. -->
+				<param type="text" argument="-g" label="Taxonomic Label" help="The label should have the format s__&amp;lt;species_name&amp;gt;">
+					<validator type="regex" message="no spaces">^\w+$</validator>
+				</param>
+			</when>
+			<when value="f">
+				<param type="data" format="fasta" argument="-i" label="multi-fasta input"/>
+			</when>
+		</conditional>
+    </inputs>
+    <outputs>
+        <data name="output" format="fasta" label="${'Format multi-fasta file on ' + $on_string if $action.select=='f' else 'Download UniRef90'}">
+			<discover_datasets pattern="(?P&lt;designation&gt;.*)\.fasta" format="fasta" visible="true" directory="database" assign_primary_output="true"/>
+		</data>
+	</outputs>
+    <tests>
+		<!-- s__Candidatus_Carsonella_ruddii only has 2 genomes (fast for testing) -->
+    </tests>
+    <help><![CDATA[
+        The phylophlan_setup_database.py script can be used to either format an input folder or multi-fasta file to be used as
+database in phylophlan.py, or automatically download a pre-identified set of core UniRef90 proteins for the taxonomic
+label of a given species.
+
+    ]]></help>
+    <citations>
+        <citation type="doi">10.1038/s41467-020-16366-7</citation>
+    </citations>
+</tool>
