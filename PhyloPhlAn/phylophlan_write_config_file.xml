@@ -1,10 +1,11 @@
 <tool id="phylophlan_write_config_file" name="Configure PhyloPhlAn" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
-    <description>
+	<description>
         to use specific software libraries
     </description>
-	<requirements>
-        <requirement type="package" version="3.1.1">phylophlan</requirement>
-    </requirements>
+	<macros>
+        <import>macros.xml</import>
+    </macros>
+	<expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
         phylophlan_write_config_file
 			-o '$output1'
@@ -201,7 +202,5 @@ options:
                         version and exit
 
     ]]></help>
-    <citations>
-        <citation type="doi">10.1038/s41467-020-16366-7</citation>
-    </citations>
+    <expand macro="citations"/>
 </tool>

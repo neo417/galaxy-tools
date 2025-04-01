@@ -1,0 +1,14 @@
+<macros>
+    <xml name="requirements">
+        <requirements>
+			<requirement type="package" version="3.1.1">phylophlan</requirement>
+            <yield/>
+        </requirements>
+    </xml>
+    <xml name="citations">
+        <citations>
+			<citation type="doi">10.1038/s41467-020-16366-7</citation>
+            <yield/>
+        </citations>
+    </xml>
+</macros>

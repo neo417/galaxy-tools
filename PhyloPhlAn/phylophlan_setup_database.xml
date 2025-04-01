@@ -2,9 +2,10 @@
     <description>
         format multi-fasta file or download UniRef90 proteins
     </description>
-	<requirements>
-        <requirement type="package" version="3.1.1">phylophlan</requirement>
-    </requirements>
+	<macros>
+        <import>macros.xml</import>
+    </macros>
+	<expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
 		#import re
 
@@ -52,7 +53,5 @@ database in phylophlan.py, or automatically download a pre-identified set of cor
 label of a given species.
 
     ]]></help>
-    <citations>
-        <citation type="doi">10.1038/s41467-020-16366-7</citation>
-    </citations>
+    <expand macro="citations"/>
 </tool>
