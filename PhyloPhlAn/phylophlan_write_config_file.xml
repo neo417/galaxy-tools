@@ -42,6 +42,7 @@
 			--overwrite
     ]]></command>
     <inputs>
+		<!-- Todo: Add support for default configs using 'phylophlan_write_default_configs' -->
 		<conditional name="db">
 			<param type="select" argument="-d" label="Main Database Type" help="Depending on the choice, different fields become mandatory.">
 				<option value="n">Nucleotides</option>

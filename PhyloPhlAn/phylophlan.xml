@@ -14,16 +14,11 @@
 			#set $identifier = re.sub('[^\w\-\._]', '_', str($i.element_identifier))
 			ln -s '$i' 'input/${identifier}' &&
 		#end for
-		ls -a input > $output1 &&
-	
+		
 		mkdir -p 'database/' &&
-		#set $identifier = re.sub('[^\w\-\._]', '_', str($database.name))
-		ln -s '$database' 'database/${identifier}' &&
-		ls -a database >> $output1 
+		ln -s '$database' 'database/database.faa' &&
 		
-		
-        #*
-		ln -s '$config' isolates_config.cfg
+		ln -s '$config' isolates_config.cfg &&
 		
 		phylophlan
 			-i input
@@ -46,7 +41,7 @@
 			$quality.remove_only_gaps_entries
 			#if not $quality.remove_only_gaps_entries
 				$quality.remove_fragmentary_entries
-				if $quality.fragmentary_threshold
+				#if $quality.fragmentary_threshold
 					--fragmentary_threshold $quality.fragmentary_threshold
 				#end if
 			#end if
@@ -61,14 +56,16 @@
 				#end if
 			#end if
 			
+			$force_nucleotides
+			
 			-t a
-			--force_nucleotides
-			--nproc 4
+			--nproc \${GALAXY_SLOTS:-4}
 			--verbose
-		*#
     ]]></command>
     <inputs>
-		<param name="input" type="data_collection" collection_type="list" label="Input Dataset"/>
+		<!-- Todo: Handle input/database files with unexpected filenames/designations -->
+		<!-- Todo: Support selecting database/marker type -->
+		<param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"/>
 		<param name="database" type="data" format="fasta" label="Database"/>
 		<param name="config" type="data" format="toml" label="Configuration"/>
 		<param argument="--diversity" type="select" label="Diversity" help="Set parameters to default values in accordance with the expected diversity of the phylogeny to be build.">
@@ -76,7 +73,7 @@
 			<option value="medium">medium (for genus- and family-level phylogenies)</option>
 			<option value="high">high (for tree-of-life and higher-ranked taxonomic phylogenies)</option>
 		</param>
-		<param name="accuracy" type="boolean" truevalue="--fast" falsevalue="--accurate" argument="--accurate / --fast"
+		<param name="accuracy" type="boolean" truevalue="--fast" falsevalue="--accurate" argument="--fast"
 			   label="Reduce the number of considered phylogenetic positions (faster, but less accurate)"
 			   help="Affected parameters depend on the --diversity level."/>
 		<section name="quality" title="Input quality thresholds" help="Discard input genomes/proteomes and phylogenetic markers with insufficient quality.">
@@ -117,9 +114,15 @@
 					   help="Remove columns where at least one amino acid appears more often than the threshold frequency. (Default: 0.99)"/>
 			</when>
 		</conditional>
+		<param argument="--force_nucleotides" type="boolean" truevalue="--force_nucleotides" falsevalue=""
+			   label="Force nucleotides"
+			   help="Force PhyloPhlAn to use nucleotide sequences for the phylogenetic analysis, even in the case of a database of amino acids."/>
 	</inputs>
     <outputs>
 		<data name="output1" format="txt"/>
+		<data name="output" format="txt">
+			<discover_datasets pattern="__designation__" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+		</data>
     </outputs>
     <tests>
     </tests>
@@ -153,9 +156,6 @@ options:
                         Folder containing your input genomes and/or proteomes (default: None)
   -c CLEAN, --clean CLEAN
                         Clean the output and partial data produced for the specified project (default: None)
-  -o OUTPUT, --output OUTPUT
-                        Output folder name, otherwise it will be the name of the input folder concatenated with the
-                        name of the database used (default: None)
   -d DATABASE, --database DATABASE
                         The name of the database of markers to use (default: None)
   -t {n,a}, --db_type {n,a}
@@ -176,8 +176,6 @@ options:
                         option (default: False)
   --submod_list         List of all the available substitution models that can be specified with the --maas option
                         (default: False)
-  --nproc NPROC         The number of cores to use (default: 1)
-
   --subsample {phylophlan,onethousand,sevenhundred,fivehundred,threehundred,onehundred,fifty,twentyfive,tenpercent,twentyfivepercent,fiftypercent,full}
                         The number of positions to retain from each single marker, available option are: "phylophlan":
                         specific number of positions for each PhyloPhlAn marker (only when "--database phylophlan");
@@ -199,8 +197,6 @@ options:
   --mutation_rates      If specified will produced a mutation rates table for each of the aligned markers and a
                         summary table for the concatenated MSA. This operation can take a long time to finish
                         (default: False)
-  --force_nucleotides   If specified force PhyloPhlAn to use nucleotide sequences for the phylogenetic analysis, even
-                        in the case of a database of amino acids (default: False)
   --convert_N2gap       If specified Ns will be forced to gaps (-) after the MSAs and only whit nucleotides MSAs
                         (default: False)
   --update              Update the databases file (default: False)
