@@ -16,9 +16,47 @@
 		#end for
 		
 		mkdir -p 'database/' &&
-		ln -s '$database' 'database/database.faa' &&
+		#if $db.type == "n"
+			ln -s '$database' 'database/database.fna' &&
+		#else
+			ln -s '$database' 'database/database.faa' &&
+		#end if
 		
-		ln -s '$config' isolates_config.cfg &&
+		phylophlan_write_config_file
+			-o isolates_config.cfg
+			-d $db.type
+			
+			#if $db.db_dna
+				--db_dna $db.db_dna
+			#end if
+			#if $db.db_aa
+				--db_aa $db.db_aa
+			#end if
+			#if $db.map_dna
+				--map_dna $db.map_dna
+			#end if
+			#if $db.map_aa
+				--map_aa $db.map_aa
+			#end if
+			
+			--msa $msa
+			#if $trimming.trim != "None"
+				--trim trimal
+			#end if
+			
+			#if $config.gene_tree.gene_tree1
+				--gene_tree1 $config.gene_tree.gene_tree1
+				#if $config.gene_tree.gene_tree2
+					--gene_tree2 $config.gene_tree.gene_tree2
+				#end if
+			#end if
+			--tree1 $config.tree.tree1
+			#if $config.tree.tree2
+				--tree2 raxml
+			#end if
+			
+			$force_nucleotides
+			--overwrite &&
 		
 		phylophlan
 			-i input
@@ -58,16 +96,56 @@
 			
 			$force_nucleotides
 			
-			-t a
+			-t $db.type
 			--nproc \${GALAXY_SLOTS:-4}
 			--verbose
     ]]></command>
     <inputs>
 		<!-- Todo: Handle input/database files with unexpected filenames/designations -->
-		<!-- Todo: Support selecting database/marker type -->
 		<param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"/>
-		<param name="database" type="data" format="fasta" label="Database"/>
-		<param name="config" type="data" format="toml" label="Configuration"/>
+		<param name="database" type="data" format="fasta" label="Reference Database"/>
+		<conditional name="db">
+			<param type="select" name="type" argument="-d / -t" label="[Config] Database Marker Type" help="Depending on the choice, different fields become mandatory.">
+					<option value="n">Nucleotides</option>
+					<option value="a">Amino acids</option>
+			</param>
+			<when value="n">
+				<param type="select" argument="--db_dna" label="Nucleotides DB">
+					<option value="makeblastdb">makeblastdb</option>
+				</param>
+				<param type="select" argument="--db_aa" label="Amino acids DB" optional="true">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_dna" label="Map genomes">
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_aa" label="Map proteomes" optional="true">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+			</when>
+			<when value="a">
+				<param type="select" argument="--db_dna" label="Nucleotides DB" optional="true">
+					<option value="makeblastdb">makeblastdb</option>
+				</param>
+				<param type="select" argument="--db_aa" label="Amino acids DB">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_dna" label="Map genomes" optional="true">
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+					<option value="diamond">diamond</option>
+				</param>
+				<param type="select" argument="--map_aa" label="Map proteomes">
+					<option value="usearch">usearch</option>
+					<option value="diamond">diamond</option>
+				</param>
+			</when>
+		</conditional>
 		<param argument="--diversity" type="select" label="Diversity" help="Set parameters to default values in accordance with the expected diversity of the phylogeny to be build.">
 			<option value="low">low (for species- and strain-level phylogenies)</option>
 			<option value="medium">medium (for genus- and family-level phylogenies)</option>
@@ -91,10 +169,16 @@
 				   label="Remove gap-only entries"
 				   help="Remove entries composed only of gaps (&#34;-&#34;)&lt;br&gt;Equivalent to &#34;--remove_fragmentary_entries --fragmentary_threshold 1&#34;."/>
 		</section>
+		<param type="select" argument="--msa" label="[Config] Multiple-sequence alignment">
+			<option value="muscle">muscle</option>
+			<option value="mafft">mafft</option>
+			<option value="opal">opal</option>
+			<option value="upp">upp</option>
+		</param>
 		<conditional name="trimming">
 			<param argument="--trim" type="select" label="Trimming strategy">
 				<option value="None"></option>
-				<option value="gap_trim">Use Config (trimal)</option>
+				<option value="gap_trim">Use trimAl</option>
 				<option value="gap_perc">Gap percentage</option>
 				<option value="not_variant">Not a variant</option>
 				<option value="greedy">All (greedy)</option>
@@ -117,9 +201,32 @@
 		<param argument="--force_nucleotides" type="boolean" truevalue="--force_nucleotides" falsevalue=""
 			   label="Force nucleotides"
 			   help="Force PhyloPhlAn to use nucleotide sequences for the phylogenetic analysis, even in the case of a database of amino acids."/>
+		<section name="config" title="Configure which software to use for the analysis">
+			<section name="gene_tree" title="Single-gene trees">
+				<param type="select" argument="--gene_tree1" optional="true" label="Build phylogenies">
+					<option value="fasttree">fasttree</option>
+					<option value="raxml">raxml</option>
+					<option value="iqtree">iqtree</option>
+				</param>
+				<param type="select" argument="--gene_tree2" optional="true" label="Refine phylogenies">
+					<option value="raxml">raxml</option>
+				</param>
+			</section>
+			<section name="tree" title="Phylogeny" expanded="true">
+				<param type="select" argument="--tree1" label="Build phylogeny">
+					<option value="fasttree">fasttree</option>
+					<option value="raxml">raxml</option>
+					<option value="iqtree">iqtree</option>
+					<option value="astral">astral</option>
+					<option value="astrid">astrid</option>
+				</param>
+				<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
+					<option value="raxml">raxml</option>
+				</param>
+			</section>
+		</section>
 	</inputs>
     <outputs>
-		<data name="output1" format="txt"/>
 		<data name="output" format="txt">
 			<discover_datasets pattern="__designation__" format="txt" visible="true" directory="output" assign_primary_output="true"/>
 		</data>
