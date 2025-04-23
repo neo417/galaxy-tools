@@ -9,9 +9,9 @@
     <command detect_errors="exit_code"><![CDATA[
 		#import re
 		
-		#if "nt" in $config.analysis
+		#if "nt" in $config.analysis.value
 			#set $db_type = "n"
-		#else if "aa" in $config.analysis
+		#else if "aa" in $config.analysis.value
 			#set $db_type = "a"
 		#else
 			#set $db_type = $config.db.type
@@ -37,7 +37,7 @@
 				--trim trimal
 			#end if
 			
-			#if config.analysis == "supermatrix_aa"
+			#if $config.analysis == "supermatrix_aa"
 				--db_aa diamond
 				--map_dna diamond
 				--map_aa diamond
@@ -102,10 +102,10 @@
 			
 			#if $trimming.trim != "None"
 				--trim $trimming.trim
-				#if $trimming.gap_perc_threshold
+				#if $trimming.trim.value in {'gap_perc', 'greedy'}
 					--gap_perc_threshold $trimming.gap_perc_threshold
 				#end if
-				#if $trimming.not_variant_threshold
+				#if $trimming.trim.value in {'not_variant', 'greedy'}
 					--not_variant_threshold $trimming.not_variant_threshold
 				#end if
 			#end if
@@ -125,6 +125,7 @@
 					<option value="supermatrix_aa">supermatrix_aa (diamond, mafft, fasttree, raxml)</option>
 					<option value="custom">Custom</option>
 			</param>
+			<when value="supermatrix_aa"/>
 			<when value="custom">
 				<conditional name="db">
 					<param type="select" name="type" argument="-d / -t" label="Database marker type">
@@ -218,6 +219,8 @@
 				<option value="not_variant">Not a variant</option>
 				<option value="greedy">All (greedy)</option>
 			</param>
+			<when value="None"/>
+			<when value="gap_trim"/>
 			<when value="gap_perc">
 				<param argument="--gap_perc_threshold" type="float" optional="true" label="Gap threshold"
 					   help="Remove columns with a percentage of gaps above the threshold. (Default: 0.67)"/>
@@ -243,6 +246,38 @@
 		</data>
     </outputs>
     <tests>
+	    <test>
+            <param name="input">
+				<collection type="list">
+					<element name="GCA_003236755_trunc.fna" value="GCA_003236755_trunc.fna" ftype="fasta"/>
+					<element name="GCA_003236765_trunc.fna" value="GCA_003236765_trunc.fna" ftype="fasta"/>
+					<element name="GCA_003236795_trunc.fna" value="GCA_003236795_trunc.fna" ftype="fasta"/>
+					<element name="GCA_003236805_trunc.fna" value="GCA_003236805_trunc.fna" ftype="fasta"/>
+				</collection>
+			</param>
+            <param name="database" ftype="fasta" value="database_trunc.faa"/>
+            <param name="analysis" value="supermatrix_aa"/>
+            <param name="diversity" value="low"/>
+            <param name="accuracy" value="false"/>
+			<section name="quality">
+				<param name="min_num_entries" value="1"/>
+				<param name="remove_fragmentary_entries" value="true"/>
+				<param name="fragmentary_threshold" value="0.67"/>
+			</section>
+            <param name="trim" value="gap_trim"/>
+            <param name="force_nucleotides" value="true"/>
+            <output name="output">
+				<assert_contents>
+					<has_text_matching expression="\(.?(?:GCA_003236(?:805|755|765|795)_trunc:.+)+\):\d+\.\d+;"/>
+				</assert_contents>
+				<discovered_dataset designation="input_concatenated.aln"> <!-- ftype="txt" value="input_concatenated.aln" compare="contains" -->
+					<assert_contents>
+						<has_line_matching n="4" expression=">GCA_003236(?:805|755|765|795)_trunc"/>
+						<has_n_lines n="736" delta="1"/>
+					</assert_contents>
+				</discovered_dataset>
+			</output>
+        </test>
     </tests>
     <help><![CDATA[
         usage: phylophlan [-h] [-i INPUT | -c CLEAN] [-o OUTPUT] [-d DATABASE] [-t {n,a}] [-f CONFIG_FILE] --diversity
