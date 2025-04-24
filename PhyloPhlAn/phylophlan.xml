@@ -53,13 +53,34 @@
 				--trim trimal
 			#end if
 			
-			#if $config.analysis == "supermatrix_aa"
+			#if $config.analysis == "supermatrix_nt"
+				--db_dna makeblastdb
+				--map_dna blastn
+				--msa mafft
+				--tree1 fasttree
+				--tree2 raxml
+			#else if $config.analysis == "supertree_nt"
+				--db_dna makeblastdb
+				--map_dna blastn
+				--msa mafft
+				--gene_tree1 fasttree
+				--gene_tree2 raxml
+				--tree1 astral
+			#else if $config.analysis == "supermatrix_aa"
 				--db_aa diamond
 				--map_dna diamond
 				--map_aa diamond
 				--msa mafft
 				--tree1 fasttree
 				--tree2 raxml
+			#else if $config.analysis == "supertree_aa"
+				--db_aa diamond
+				--map_dna diamond
+				--map_aa diamond
+				--msa mafft
+				--gene_tree1 fasttree
+				--gene_tree2 raxml
+				--tree1 astral
 			#else
 				#if $config.db.db_dna
 					--db_dna $config.db.db_dna
@@ -149,7 +170,10 @@
 		<param name="database" type="data" format="fasta" label="Reference Database"/>
 		<conditional name="config">
 			<param type="select" name="analysis" label="Configure which external software to use for the analysis">
+					<option value="supermatrix_nt">supermatrix_nt (blast, mafft, fasttree, raxml)</option>
+					<option value="supertree_nt">supertree_nt (blast, mafft, fasttree, raxml, astral)</option>
 					<option value="supermatrix_aa">supermatrix_aa (diamond, mafft, fasttree, raxml)</option>
+					<option value="supertree_aa">supertree_aa (diamond, mafft, fasttree, raxml, astral)</option>
 					<option value="custom">Custom</option>
 			</param>
 			<when value="supermatrix_aa"/>
