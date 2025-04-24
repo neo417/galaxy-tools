@@ -176,7 +176,10 @@
 					<option value="supertree_aa">supertree_aa (diamond, mafft, fasttree, raxml, astral)</option>
 					<option value="custom">Custom</option>
 			</param>
+			<when value="supermatrix_nt"/>
+			<when value="supertree_nt"/>
 			<when value="supermatrix_aa"/>
+			<when value="supertree_aa"/>
 			<when value="custom">
 				<conditional name="db">
 					<param type="select" name="type" argument="-d / -t" label="Database marker type">
@@ -215,7 +218,9 @@
 					<option value="opal">opal</option>
 					<option value="upp">upp</option>
 				</param>
-				<section name="gene_tree" title="Single-gene trees">
+				<section name="gene_tree" title="Single-gene trees (Supertree)"
+						 help="To use the gene trees pipeline instead of the supermatrix (or concatenation) pipeline select an option for the --gene_tree1 argument.
+						 Additionally the --tree1 argument should be 'astral'."> <!-- Todo: do this automatically? -->
 					<param type="select" argument="--gene_tree1" optional="true" label="Build phylogenies">
 						<option value="fasttree">fasttree</option>
 						<option value="raxml">raxml</option>
@@ -257,7 +262,7 @@
 			<param argument="--remove_fragmentary_entries" type="boolean" truevalue="--remove_fragmentary_entries" falsevalue=""
 				   label="Remove fragmentary entries"/>
 			<param argument="--fragmentary_threshold" type="float" optional="true" label="Fragmentary threshold"
-				   help="The fraction of gaps in the MSA to be considered fragmentary. (Default: 0.85)"/>
+				   help="The fraction of gaps in the MSA to be considered fragmentary."/>
 			<param argument="--remove_only_gaps_entries" type="boolean" truevalue="--remove_only_gaps_entries" falsevalue=""
 				   label="Remove gap-only entries"
 				   help="Remove entries composed only of gaps (&#34;-&#34;)&lt;br&gt;Equivalent to &#34;--remove_fragmentary_entries --fragmentary_threshold 1&#34;."/>
@@ -274,17 +279,17 @@
 			<when value="gap_trim"/>
 			<when value="gap_perc">
 				<param argument="--gap_perc_threshold" type="float" optional="true" label="Gap threshold"
-					   help="Remove columns with a percentage of gaps above the threshold. (Default: 0.67)"/>
+					   help="Remove columns with a percentage of gaps above the threshold."/>
 			</when>
 			<when value="not_variant">
 				<param argument="--not_variant_threshold" type="float" optional="true" label="Variant threshold"
-					   help="Remove columns where at least one amino acid appears more often than the threshold frequency. (Default: 0.99)"/>
+					   help="Remove columns where at least one amino acid appears more often than the threshold frequency."/>
 			</when>
 			<when value="greedy">
 				<param argument="--gap_perc_threshold" type="float" optional="true" label="Gap threshold"
-					   help="Remove columns with a percentage of gaps above the threshold. (Default: 0.67)"/>
+					   help="Remove columns with a percentage of gaps above the threshold."/>
 				<param argument="--not_variant_threshold" type="float" optional="true" label="Variant threshold"
-					   help="Remove columns where at least one amino acid appears more often than the threshold frequency. (Default: 0.99)"/>
+					   help="Remove columns where at least one amino acid appears more often than the threshold frequency."/>
 			</when>
 		</conditional>
 			<section name="sample" title="Subsampling"
