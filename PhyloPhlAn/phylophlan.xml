@@ -5,7 +5,22 @@
 	<macros>
         <import>macros.xml</import>
     </macros>
-	<expand macro="requirements"/>
+	<expand macro="requirements">
+		<requirement type="package" version="2.1.11">diamond</requirement>
+		<requirement type="package" version="2.16.0">blast</requirement>
+		<requirement type="package" version="12.0">usearch</requirement>
+		
+		<requirement type="package" version="5.3">muscle</requirement>
+		<requirement type="package" version="7.526">mafft</requirement>
+		<!-- <requirement type="package" version="">opal</requirement> -->
+		<!-- <requirement type="package" version="">upp</requirement> -->
+		
+		<requirement type="package" version="2.1.10">fasttree</requirement>
+		<requirement type="package" version="8.2.12">raxml</requirement>
+		<requirement type="package" version="2.4.0">iqtree</requirement>
+		<!-- <requirement type="package" version="">astral</requirement> -->
+		<!-- <requirement type="package" version="">astrid</requirement> -->
+	</expand>
     <command detect_errors="exit_code"><![CDATA[
 		#import re
 		
