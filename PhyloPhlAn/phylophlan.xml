@@ -82,17 +82,15 @@
 				--gene_tree2 raxml
 				--tree1 astral
 			#else
-				#if $config.db.db_dna
+				#if $config.db.type == "n"
 					--db_dna $config.db.db_dna
-				#end if
-				#if $config.db.db_aa
-					--db_aa $config.db.db_aa
-				#end if
-				#if $config.db.map_dna
 					--map_dna $config.db.map_dna
-				#end if
-				#if $config.db.map_aa
+				#else if $config.db.type == "a"
+					--db_aa $config.db.db_aa
 					--map_aa $config.db.map_aa
+					#if $config.db.map_dna
+						--map_dna $config.db.map_dna
+					#end if
 				#end if
 				--msa $config.msa
 				
@@ -166,7 +164,8 @@
     ]]></command>
     <inputs>
 		<!-- Todo: Handle input/database files with unexpected filenames/designations -->
-		<param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"/>
+		<param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"
+			   help="In order for PhyloPhlAn to detect the input files in the collection, the fasta files MUST have the extensions '.fna' for nucleotide sequences and '.faa' for amino acid sequences. (Or '.fna.gz' and '.faa.gz' respectively.)"/>
 		<param name="database" type="data" format="fasta" label="Reference Database"/>
 		<conditional name="config">
 			<param type="select" name="analysis" label="Configure which external software to use for the analysis">
@@ -367,6 +366,44 @@
 					<assert_contents>
 						<has_line_matching n="4" expression=">GCA_003236(?:805|755|765|795)_trunc"/>
 						<has_n_lines n="736" delta="1"/>
+					</assert_contents>
+				</discovered_dataset>
+			</output>
+        </test>
+	    <test>
+            <param name="input">
+				<collection type="list">
+					<element name="GCA_000007905_truncated.fna" value="GCA_000007905_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000008525_truncated.fna" value="GCA_000008525_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000012345_truncated.fna" value="GCA_000012345_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000012965_truncated.fna" value="GCA_000012965_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000014865_truncated.fna" value="GCA_000014865_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000020825_truncated.fna" value="GCA_000020825_truncated.fna" ftype="fasta"/>
+				</collection>
+			</param>
+            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
+            <param name="analysis" value="custom"/>
+            <param name="type" value="a"/>
+            <param name="db_aa" value="diamond"/>
+            <param name="map_dna" value="diamond"/>
+            <param name="map_aa" value="diamond"/>
+            <param name="msa" value="mafft"/>
+            <param name="tree1" value="iqtree"/>
+            <param name="diversity" value="high"/>
+            <param name="accuracy" value="true"/>
+            <output name="output">
+				<assert_contents>
+					<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated:.+)+\);"/>
+				</assert_contents>
+				<discovered_dataset designation="input_concatenated.aln">
+					<assert_contents>
+						<has_line_matching n="6" expression=">GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated"/>
+						<has_n_lines n="18" delta="1"/>
+					</assert_contents>
+				</discovered_dataset>
+				<discovered_dataset designation="input.tre.treefile">
+					<assert_contents>
+						<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated:.+)+\);"/>
 					</assert_contents>
 				</discovered_dataset>
 			</output>
