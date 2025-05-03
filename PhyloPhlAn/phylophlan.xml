@@ -4,6 +4,53 @@
     </description>
 	<macros>
         <import>macros.xml</import>
+		<xml name="config_select_software">
+			<conditional name="db">
+				<param type="select" name="type" argument="-d / -t" label="Database marker type">
+					<option value="n">Nucleotides</option>
+					<option value="a">Amino acids</option>
+				</param>
+				<when value="n">
+					<param type="select" argument="--db_dna" label="Nucleotide database">
+						<option value="makeblastdb">makeblastdb</option>
+					</param>
+					<param type="select" argument="--map_dna" label="Map genomes using">
+						<option value="blastn">blastn</option>
+						<option value="tblastn">tblastn</option>
+						<option value="diamond">diamond</option>
+					</param>
+				</when>
+				<when value="a">
+					<param type="select" argument="--db_aa" label="Amino acid database">
+						<option value="diamond">diamond</option>
+						<option value="usearch">usearch</option>
+					</param>
+					<param type="select" argument="--map_aa" label="Map proteomes using">
+						<option value="diamond">diamond</option>
+						<option value="usearch">usearch</option>
+					</param>
+					<param type="select" argument="--map_dna" label="Map genomes using" optional="true">
+						<option value="diamond">diamond</option>
+						<option value="blastn">blastn</option>
+						<option value="tblastn">tblastn</option>
+					</param>
+				</when>
+			</conditional>
+			<param type="select" argument="--msa" label="Multiple-sequence alignment">
+				<option value="mafft">mafft</option>
+				<option value="muscle">muscle</option>
+				<option value="opal">opal</option>
+				<option value="upp">upp</option>
+			</param>
+            <yield/>
+		</xml>
+		<xml name="config_supertree_maas">
+			<param name="maas" type="data" format="tabular" label="Substitution models"
+				   help="The file should be a mapping from amino acid markers to their respective (raxml) substitution model to use for gene tree reconstruction."/>
+				<!-- WARNING! PhyloPhlAn sends the second column of the file to raxml via the command line.
+					 Is the manual validation correct and not too restrictive?-->
+				<!-- Todo: Provide default model file for the included phylophlan database. -->
+		</xml>
     </macros>
 	<expand macro="requirements">
 		<requirement type="package" version="3.11">python</requirement>
@@ -94,15 +141,17 @@
 				#end if
 				--msa $config.msa
 				
-				#if $config.gene_tree.gene_tree1
+				#if $config.analysis == "custom_supertree"
 					--gene_tree1 $config.gene_tree.gene_tree1
 					#if $config.gene_tree.gene_tree2
 						--gene_tree2 $config.gene_tree.gene_tree2
 					#end if
-				#end if
-				--tree1 $config.tree.tree1
-				#if $config.tree.tree2
-					--tree2 raxml
+					--tree1 $config.tree.tree1
+				#else
+					--tree1 $config.tree.tree1
+					#if $config.tree.tree2
+						--tree2 $config.tree.tree2
+					#end if
 				#end if
 			#end if
 			
@@ -117,6 +166,10 @@
 			
 			--diversity $diversity
 			$accuracy
+			
+			#if "supertree" in $config.analysis.value and all(s.isidentifier() for l in open($config.maas, 'r') for s in l.split('\t'))
+				--maas $config.maas
+			#end if
 			
 			--min_num_proteins $quality.min_num_proteins
 			--min_len_protein $quality.min_len_protein
@@ -173,74 +226,62 @@
 					<option value="supertree_nt">supertree_nt (blast, mafft, fasttree, raxml, astral)</option>
 					<option value="supermatrix_aa">supermatrix_aa (diamond, mafft, fasttree, raxml)</option>
 					<option value="supertree_aa">supertree_aa (diamond, mafft, fasttree, raxml, astral)</option>
-					<option value="custom">Custom</option>
+					<option value="custom_supermatrix">Custom Supermatrix pipeline</option>
+					<option value="custom_supertree">Custom Supertree pipeline</option>
 			</param>
 			<when value="supermatrix_nt"/>
-			<when value="supertree_nt"/>
+			<when value="supertree_nt">
+				<expand macro="config_supertree_maas"/>
+			</when>
 			<when value="supermatrix_aa"/>
-			<when value="supertree_aa"/>
-			<when value="custom">
-				<conditional name="db">
-					<param type="select" name="type" argument="-d / -t" label="Database marker type">
-						<option value="n">Nucleotides</option>
-						<option value="a">Amino acids</option>
-					</param>
-					<when value="n">
-						<param type="select" argument="--db_dna" label="Nucleotide database">
-							<option value="makeblastdb">makeblastdb</option>
+			<when value="supertree_aa">
+				<expand macro="config_supertree_maas"/>
+			</when>
+			<when value="custom_supermatrix">
+				<expand macro="config_select_software">
+					<section name="tree" title="Phylogeny" expanded="true">
+						<param type="select" argument="--tree1" label="Build phylogeny">
+							<option value="fasttree">fasttree</option>
+							<option value="raxml">raxml</option>
+							<option value="iqtree">iqtree</option>
+							<option value="astral">astral</option>
+							<option value="astrid">astrid</option>
 						</param>
-						<param type="select" argument="--map_dna" label="Map genomes using">
-							<option value="blastn">blastn</option>
-							<option value="tblastn">tblastn</option>
-							<option value="diamond">diamond</option>
+						<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
+							<option value="raxml">raxml</option>
 						</param>
-					</when>
-					<when value="a">
-						<param type="select" argument="--db_aa" label="Amino acid database">
-							<option value="diamond">diamond</option>
-							<option value="usearch">usearch</option>
+					</section>
+				</expand>
+			</when>
+			<when value="custom_supertree">
+				<expand macro="config_supertree_maas"/> 
+					<!-- PhyloPhlAn always requires a substitution model to be provided, but only uses it when 
+						 'gene_tree1' is raxml. I have no idea what this means for wrapping. -->
+				<expand macro="config_select_software">
+					<section name="gene_tree" title="Single-gene trees (Supertree)" expanded="true">
+						<param type="select" argument="--gene_tree1" label="Build phylogenies">
+							<option value="fasttree">fasttree</option>
+							<option value="raxml">raxml</option>
+							<option value="iqtree">iqtree</option>
 						</param>
-						<param type="select" argument="--map_aa" label="Map proteomes using">
-							<option value="diamond">diamond</option>
-							<option value="usearch">usearch</option>
+						<param type="select" argument="--gene_tree2" optional="true" label="Refine phylogenies">
+							<option value="raxml">raxml</option>
 						</param>
-						<param type="select" argument="--map_dna" label="Map genomes using" optional="true">
-							<option value="diamond">diamond</option>
-							<option value="blastn">blastn</option>
-							<option value="tblastn">tblastn</option>
+					</section>
+					<section name="tree" title="Phylogeny">
+						<param type="select" argument="--tree1" label="Build phylogeny">
+							<!-- The documentation says only astral is allowed for the gene tree pipeline,
+							     but phylophlan_write_config also allows astrid.
+								 A comment clarifies that the tool must support a "consensus approach".
+								 I did not find out if astrid supports this,
+								 but I found several performance comparisons with astral, so I left it in. -->
+							<option value="astral">astral</option>
+							<option value="astrid">astrid</option>
 						</param>
-					</when>
-				</conditional>
-				<param type="select" argument="--msa" label="Multiple-sequence alignment">
-					<option value="mafft">mafft</option>
-					<option value="muscle">muscle</option>
-					<option value="opal">opal</option>
-					<option value="upp">upp</option>
-				</param>
-				<section name="gene_tree" title="Single-gene trees (Supertree)"
-						 help="To use the gene trees pipeline instead of the supermatrix (or concatenation) pipeline select an option for the --gene_tree1 argument.
-						 Additionally the --tree1 argument should be 'astral'."> <!-- Todo: do this automatically? -->
-					<param type="select" argument="--gene_tree1" optional="true" label="Build phylogenies">
-						<option value="fasttree">fasttree</option>
-						<option value="raxml">raxml</option>
-						<option value="iqtree">iqtree</option>
-					</param>
-					<param type="select" argument="--gene_tree2" optional="true" label="Refine phylogenies">
-						<option value="raxml">raxml</option>
-					</param>
-				</section>
-				<section name="tree" title="Phylogeny" expanded="true">
-					<param type="select" argument="--tree1" label="Build phylogeny">
-						<option value="fasttree">fasttree</option>
-						<option value="raxml">raxml</option>
-						<option value="iqtree">iqtree</option>
-						<option value="astral">astral</option>
-						<option value="astrid">astrid</option>
-					</param>
-					<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
-						<option value="raxml">raxml</option>
-					</param>
-				</section>
+						<!-- When phylophlan_write_config writes a config for the gene tree pipeline it ignores the 'tree2' 
+						     parameter as it does not expect there to be a tool that refine a consensus phylogeny (yet). -->
+					</section>
+				</expand>
 			</when>
 		</conditional>
 		<param argument="--diversity" type="select" label="Diversity" help="Set parameters to default values in accordance with the expected diversity of the phylogeny to be build.">
@@ -382,7 +423,7 @@
 				</collection>
 			</param>
             <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
-            <param name="analysis" value="custom"/>
+            <param name="analysis" value="custom_supermatrix"/>
             <param name="type" value="a"/>
             <param name="db_aa" value="diamond"/>
             <param name="map_dna" value="diamond"/>
@@ -419,13 +460,9 @@ informative markers. At the other extreme of resolution, PhyloPhlAn scales to ve
 
 options (Todo):
   --strainphlan         The inputs are aligned markers from StrainPhlAn (default: False)
-  --submod_list         List of all the available substitution models that can be specified with the --maas option
-                        (default: False)
   --unknown_fraction UNKNOWN_FRACTION
                         Define the amount of unknowns ("X" and "-") allowed in each column of the MSA of the markers
                         (default: 0.3)
-  --maas MAAS           Select a mapping file that specifies the substitution model of amino acid to use for each of
-                        the markers for the gene tree reconstruction. File must be tab-separated (default: None)
   --mutation_rates      If specified will produced a mutation rates table for each of the aligned markers and a
                         summary table for the concatenated MSA. This operation can take a long time to finish
                         (default: False)
