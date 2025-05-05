@@ -208,8 +208,11 @@
 				--submat $sample.submat
 			#end if
 			
+			--unknown_fraction $quality.unknown_fraction
+			$quality.convert_N2gap
 			$force_nucleotides
 			$sort
+			$mutation_rates
 			
 			-t $db_type
 			--nproc \${GALAXY_SLOTS:-4}
@@ -293,6 +296,8 @@
 			   label="Reduce the number of considered phylogenetic positions (faster, but less accurate)"
 			   help="Affected parameters depend on the --diversity level."/>
 		<section name="quality" title="Input quality thresholds" help="Discard input genomes/proteomes and phylogenetic markers with insufficient quality.">
+			<!-- If PhyloPhlAn uses a consistent default value, I display it, otherwise the filed is optional.
+				 Should the default change it must be changed here as well. -->
 			<param argument="--min_num_proteins" type="integer" value="1" label="Minimum proteins per proteome"/>
 			<param argument="--min_len_protein" type="integer" value="50" label="Minimum protein length"/>
 			<param argument="--min_num_markers" type="integer" value="1" label="Minimum mapped markers"
@@ -306,6 +311,10 @@
 			<param argument="--remove_only_gaps_entries" type="boolean" truevalue="--remove_only_gaps_entries" falsevalue=""
 				   label="Remove gap-only entries"
 				   help="Remove entries composed only of gaps (&#34;-&#34;)&lt;br&gt;Equivalent to &#34;--remove_fragmentary_entries --fragmentary_threshold 1&#34;."/>
+			<param argument="--unknown_fraction" type="float" value="0.3" label="Maximum unknown fraction"
+				   help="The fraction of unknowns ('X' and '-') allowed in each column of the MSA of the markers."/>
+			<param argument="--convert_N2gap" type="boolean" truevalue="--convert_N2gap" falsevalue=""
+				   label="Convert Ns in nucleotides MSAs to gaps ('-') after MSAs"/> <!-- I have no idea what this means. Is this the right place in the wrapper? -->
 		</section>
 		<conditional name="trimming">
 			<param argument="--trim" type="select" label="Trimming strategy">
@@ -371,11 +380,30 @@
 			   label="Sort markers"
 			   help="Force PhylophlAn to consider markers in a specific order when concatenating sequences."/>
 			   <!-- Sort is only used for super-matrix approach (concatenation) -->
-			   <!-- Todo: maas option and other settings for the gene tree pipeline -->
+		<param argument="--mutation_rates" type="boolean" truevalue="--mutation_rates" falsevalue=""
+			   label="Mutation rates"
+			   help="If specified will produced a mutation rates table for each of the aligned markers and a
+                        summary table for the concatenated MSA. This operation can take a long time to finish"/>
 	</inputs>
     <outputs>
 		<data name="output" format="txt">
-			<discover_datasets pattern="__designation__" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<!-- Discover all files in the output directory (in case I missed one / did not know about it).
+				 Then, hide the ones I know are not needed (Is there a way to delete them from the history?)
+			<discover_datasets pattern="__designation__" format="txt" visible="true" directory="output"/> 
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.(ckp\.gz|log))" format="data" visible="false" directory="output"/>
+			 -->
+			<!-- Parse shorter designations for known files and assign a primary output. -->
+			<!-- RAxML -->
+			<discover_datasets pattern="(?P&lt;designation&gt;.+)\.input_refined\.tre" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="input_(?P&lt;designation&gt;resolved\.tre)" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<!-- fasttree -->
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre)$" format="txt" visible="true" directory="output"/>
+			<!-- iqtree -->
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.(bionj|treefile|iqtree))" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.mldist)" format="mldist" visible="true" directory="output"/>
+			<!-- misc -->
+			<discover_datasets pattern="input_(?P&lt;designation&gt;.+\.aln)" format="fasta" visible="true" directory="output"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;mutation_rates)\.tsv" format="tabular" visible="true" directory="output"/>
 		</data>
     </outputs>
     <tests>
@@ -403,7 +431,7 @@
 				<assert_contents>
 					<has_text_matching expression="\(.?(?:GCA_003236(?:805|755|765|795)_trunc:.+)+\):\d+\.\d+;"/>
 				</assert_contents>
-				<discovered_dataset designation="input_concatenated.aln"> <!-- ftype="txt" value="input_concatenated.aln" compare="contains" -->
+				<discovered_dataset designation="concatenated.aln"> <!-- ftype="txt" value="input_concatenated.aln" compare="contains" -->
 					<assert_contents>
 						<has_line_matching n="4" expression=">GCA_003236(?:805|755|765|795)_trunc"/>
 						<has_n_lines n="736" delta="1"/>
@@ -436,7 +464,7 @@
 				<assert_contents>
 					<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated:.+)+\);"/>
 				</assert_contents>
-				<discovered_dataset designation="input_concatenated.aln">
+				<discovered_dataset designation="concatenated.aln">
 					<assert_contents>
 						<has_line_matching n="6" expression=">GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated"/>
 						<has_n_lines n="18" delta="1"/>
@@ -457,17 +485,6 @@ genomes (MAGs) to species-level genome bins (SGBs). For individual clades of int
 sets), PhyloPhlAn reconstructs strain-level phylogenies from among the closest species using clade-specific maximally
 informative markers. At the other extreme of resolution, PhyloPhlAn scales to very-large phylogenies comprising
 >17,000 microbial species
-
-options (Todo):
-  --strainphlan         The inputs are aligned markers from StrainPhlAn (default: False)
-  --unknown_fraction UNKNOWN_FRACTION
-                        Define the amount of unknowns ("X" and "-") allowed in each column of the MSA of the markers
-                        (default: 0.3)
-  --mutation_rates      If specified will produced a mutation rates table for each of the aligned markers and a
-                        summary table for the concatenated MSA. This operation can take a long time to finish
-                        (default: False)
-  --convert_N2gap       If specified Ns will be forced to gaps (-) after the MSAs and only whit nucleotides MSAs
-                        (default: False)
 
     ]]></help>
     <expand macro="citations"/>
