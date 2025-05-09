@@ -1,4 +1,4 @@
-<tool id="phylophlan_assign_sgbs" name="Assign SGBs and taxonomy" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
+<tool id="phylophlan_assign_sgbs" name="Assign SGBs and taxonomy" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
     <description>
          to metagenome-assembled genomes.
     </description>

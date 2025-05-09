@@ -1,4 +1,4 @@
-<tool id="phylophlan" name="PhyloPhlAn" version="0.1.0+galaxy0" python_template_version="3.5" profile="21.05">
+<tool id="phylophlan" name="PhyloPhlAn" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
     <description>
          microbial genome characterization and phylogenetic analysis
     </description>
@@ -39,8 +39,8 @@
 			<param type="select" argument="--msa" label="Multiple-sequence alignment">
 				<option value="mafft">mafft</option>
 				<option value="muscle">muscle</option>
-				<option value="opal">opal</option>
-				<option value="upp">upp</option>
+				<!-- <option value="opal">opal</option> -->
+				<!-- <option value="upp">upp</option> -->
 			</param>
             <yield/>
 		</xml>
@@ -212,7 +212,7 @@
 			$quality.convert_N2gap
 			$force_nucleotides
 			$sort
-			$mutation_rates
+			$mrate.mutation_rates
 			
 			-t $db_type
 			--nproc \${GALAXY_SLOTS:-4}
@@ -248,7 +248,7 @@
 							<option value="raxml">raxml</option>
 							<option value="iqtree">iqtree</option>
 							<option value="astral">astral</option>
-							<option value="astrid">astrid</option>
+							<!-- <option value="astrid">astrid</option> -->
 						</param>
 						<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
 							<option value="raxml">raxml</option>
@@ -279,7 +279,7 @@
 								 I did not find out if astrid supports this,
 								 but I found several performance comparisons with astral, so I left it in. -->
 							<option value="astral">astral</option>
-							<option value="astrid">astrid</option>
+							<!-- <option value="astrid">astrid</option> -->
 						</param>
 						<!-- When phylophlan_write_config writes a config for the gene tree pipeline it ignores the 'tree2' 
 						     parameter as it does not expect there to be a tool that refine a consensus phylogeny (yet). -->
@@ -319,7 +319,7 @@
 		<conditional name="trimming">
 			<param argument="--trim" type="select" label="Trimming strategy">
 				<option value="None">Default</option>
-				<option value="gap_trim">Use trimAl</option>
+				<option value="gap_trim">Use trimAl (gap_trim)</option>
 				<option value="gap_perc">Gap percentage</option>
 				<option value="not_variant">Not a variant</option>
 				<option value="greedy">All (greedy)</option>
@@ -380,10 +380,14 @@
 			   label="Sort markers"
 			   help="Force PhylophlAn to consider markers in a specific order when concatenating sequences."/>
 			   <!-- Sort is only used for super-matrix approach (concatenation) -->
-		<param argument="--mutation_rates" type="boolean" truevalue="--mutation_rates" falsevalue=""
-			   label="Mutation rates"
-			   help="If specified will produced a mutation rates table for each of the aligned markers and a
-                        summary table for the concatenated MSA. This operation can take a long time to finish"/>
+		<section name="mrate" title="Mutation rates">
+			<param argument="--mutation_rates" type="boolean" truevalue="--mutation_rates" falsevalue=""
+				   label="Calculate mutation rates"
+				   help="If specified will produced a mutation rates table for each of the aligned markers and a
+							summary table for the concatenated MSA. This operation can take a long time to finish"/>
+			<param name="discard_individual_tables" type="boolean" checked="true" label="Discard individual mutation rate tables."
+				   help="Only add the summary table to the galaxy history. The individual mutation rates are still calculated. If unchecked, they will be accumulated in a collection."/>
+		</section>
 	</inputs>
     <outputs>
 		<data name="output" format="txt">
@@ -394,17 +398,26 @@
 			 -->
 			<!-- Parse shorter designations for known files and assign a primary output. -->
 			<!-- RAxML -->
-			<discover_datasets pattern="(?P&lt;designation&gt;.+)\.input_refined\.tre" format="txt" visible="true" directory="output" assign_primary_output="true"/>
-			<discover_datasets pattern="input_(?P&lt;designation&gt;resolved\.tre)" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;.+(bestTree|result))\.input_refined\.tre" format="newick" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="input_(?P&lt;designation&gt;resolved\.tre)" format="newick" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;.+(info|log))\.input_refined\.tre" format="txt" visible="true" directory="output"/>
 			<!-- fasttree -->
-			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre)$" format="txt" visible="true" directory="output"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre)$" format="newick" visible="true" directory="output"/>
 			<!-- iqtree -->
-			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.(bionj|treefile|iqtree))" format="txt" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.(bionj|treefile))" format="newick" visible="true" directory="output" assign_primary_output="true"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.iqtree)" format="txt" visible="true" directory="output"/>
 			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.mldist)" format="mldist" visible="true" directory="output"/>
 			<!-- misc -->
 			<discover_datasets pattern="input_(?P&lt;designation&gt;.+\.aln)" format="fasta" visible="true" directory="output"/>
 			<discover_datasets pattern="(?P&lt;designation&gt;mutation_rates)\.tsv" format="tabular" visible="true" directory="output"/>
+			<!-- TODO: astral -->
 		</data>
+		<collection name="mrates_collection" type="list" label="mutation rates">
+			<discover_datasets pattern="(?P&lt;designation&gt;.+)\.tsv\.bz2" format="tabular" visible="false" directory="output/mutation_rates">
+				<filter>mrate['mutation_rates'] and not mrate['discard_individual_tables']</filter>
+			</discover_datasets>
+			<filter>mrate['mutation_rates'] and not mrate['discard_individual_tables']</filter>
+		</collection>
     </outputs>
     <tests>
 	    <test>
