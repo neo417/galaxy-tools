@@ -43,35 +43,11 @@
         </test>
     </tests>
     <help><![CDATA[
-        usage: phylophlan_draw_metagenomic [-h] -i INPUT -m MAP [--top TOP]
-                                   [-o OUTPUT] [-s SEPARATOR] [--dpi DPI]
-                                   [-f F] [--citation] [--verbose] [-v]
-
 The phylophlan_draw_metagenomic.py script takes as input the output table
 generated form the phylophlan_metagenomic.py script and produces two heatmap
 figures: (1) presence/absence heatmap of the SGBs and the metagenomic samples
 of the recontructed input genomes; and (2) heatmap showing the amount of kSGB,
-uSGB, and unassinged for each metagenome
-
-options:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        The input file generated from
-                        phylophlan_metagenomic.py (default: None)
-  -m MAP, --map MAP     A mapping file that maps each bin to its metagenome
-                        (default: None)
-  --top TOP             The number of SGBs to display in the figure (default:
-                        20)
-  -o OUTPUT, --output OUTPUT
-                        Prefix output files (default: output_heatmap)
-  -s SEPARATOR, --separator SEPARATOR
-                        The separator used in the mapping file (default: )
-  --dpi DPI             Dpi resolution of the images (default: 200)
-  -f F                  Images output format (default: svg)
-  --citation            Show citation
-  --verbose             Prints more stuff (default: False)
-  -v, --version         Prints the current phylophlan_draw_metagenomic.py
-                        version and exit
+uSGB, and unassinged for each metagenome.
 
     ]]></help>
     <expand macro="citations"/>
