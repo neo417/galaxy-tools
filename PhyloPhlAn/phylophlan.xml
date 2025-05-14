@@ -157,6 +157,13 @@
 			
 			$force_nucleotides
 			--overwrite &&
+
+		## fixing astral binary path
+		sed -i "\%program_name.*astral%s%=.*%= `which astral`%" config.cfg &&
+		
+		#if "supertree" in $config.analysis.value
+			python $validate_mapping_file $config.maas &&
+		#end if
 		
 		phylophlan
 			-i input
@@ -167,7 +174,7 @@
 			--diversity $diversity
 			$accuracy
 			
-			#if "supertree" in $config.analysis.value and all(s.isidentifier() for l in open($config.maas, 'r') for s in l.split('\t'))
+			#if "supertree" in $config.analysis.value
 				--maas $config.maas
 			#end if
 			
@@ -218,6 +225,21 @@
 			--nproc \${GALAXY_SLOTS:-4}
 			--verbose
     ]]></command>
+	<configfiles>
+		<configfile name="validate_mapping_file">
+import sys
+import string
+print("Validating --maas mapping file ...")
+allowed = set(string.ascii_letters + string.digits + '._-')
+for line in open(sys.argv[1], 'r'):
+	if line.startswith('#'):
+		continue
+	for s in line.strip().split('\t'):
+		if not set(s).issubset(allowed):
+			print(f"Invalid line in mapping file: {line}")
+			sys.exit(1)
+		</configfile>
+	</configfiles>
     <inputs>
 		<!-- Todo: Handle input/database files with unexpected filenames/designations -->
 		<param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"
@@ -247,7 +269,8 @@
 							<option value="fasttree">fasttree</option>
 							<option value="raxml">raxml</option>
 							<option value="iqtree">iqtree</option>
-							<option value="astral">astral</option>
+							<!-- <option value="astral">astral</option> 
+								Astal crashed when I tried it. Does it only work in the supertree pipeline? -->
 							<!-- <option value="astrid">astrid</option> -->
 						</param>
 						<param type="select" argument="--tree2" optional="true" label="Refine phylogeny">
@@ -402,7 +425,7 @@
 			<discover_datasets pattern="input_(?P&lt;designation&gt;resolved\.tre)" format="newick" visible="true" directory="output" assign_primary_output="true"/>
 			<discover_datasets pattern="(?P&lt;designation&gt;.+(info|log))\.input_refined\.tre" format="txt" visible="true" directory="output"/>
 			<!-- fasttree -->
-			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre)$" format="newick" visible="true" directory="output"/>
+			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre)$" format="newick" visible="true" directory="output" assign_primary_output="true"/>
 			<!-- iqtree -->
 			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.(bionj|treefile))" format="newick" visible="true" directory="output" assign_primary_output="true"/>
 			<discover_datasets pattern="(?P&lt;designation&gt;input\.tre\.iqtree)" format="txt" visible="true" directory="output"/>
@@ -410,17 +433,16 @@
 			<!-- misc -->
 			<discover_datasets pattern="input_(?P&lt;designation&gt;.+\.aln)" format="fasta" visible="true" directory="output"/>
 			<discover_datasets pattern="(?P&lt;designation&gt;mutation_rates)\.tsv" format="tabular" visible="true" directory="output"/>
-			<!-- TODO: astral -->
+			<!-- astral -->
+			<discover_datasets pattern="(?P&lt;designation&gt;gene_trees\.tre)" format="newick" visible="true" directory="output/tmp"/>
 		</data>
 		<collection name="mrates_collection" type="list" label="mutation rates">
-			<discover_datasets pattern="(?P&lt;designation&gt;.+)\.tsv\.bz2" format="tabular" visible="false" directory="output/mutation_rates">
-				<filter>mrate['mutation_rates'] and not mrate['discard_individual_tables']</filter>
-			</discover_datasets>
+			<discover_datasets pattern="(?P&lt;designation&gt;.+)\.tsv\.bz2" format="tabular" visible="false" directory="output/mutation_rates"/>
 			<filter>mrate['mutation_rates'] and not mrate['discard_individual_tables']</filter>
 		</collection>
     </outputs>
     <tests>
-	    <test>
+	    <test expect_num_outputs="1">
             <param name="input">
 				<collection type="list">
 					<element name="GCA_003236755_trunc.fna" value="GCA_003236755_trunc.fna" ftype="fasta"/>
@@ -452,7 +474,7 @@
 				</discovered_dataset>
 			</output>
         </test>
-	    <test>
+	    <test expect_num_outputs="1">
             <param name="input">
 				<collection type="list">
 					<element name="GCA_000007905_truncated.fna" value="GCA_000007905_truncated.fna" ftype="fasta"/>
@@ -484,6 +506,40 @@
 					</assert_contents>
 				</discovered_dataset>
 				<discovered_dataset designation="input.tre.treefile">
+					<assert_contents>
+						<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated:.+)+\);"/>
+					</assert_contents>
+				</discovered_dataset>
+			</output>
+        </test>
+		<test expect_num_outputs="1">
+            <param name="input">
+				<collection type="list">
+					<element name="GCA_000007905_truncated.fna" value="GCA_000007905_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000008525_truncated.fna" value="GCA_000008525_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000012345_truncated.fna" value="GCA_000012345_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000012965_truncated.fna" value="GCA_000012965_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000014865_truncated.fna" value="GCA_000014865_truncated.fna" ftype="fasta"/>
+					<element name="GCA_000020825_truncated.fna" value="GCA_000020825_truncated.fna" ftype="fasta"/>
+				</collection>
+			</param>
+            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
+            <param name="analysis" value="custom_supertree"/>
+			<param name="maas" ftype="tabular" value="phylophlan.tsv"/>
+            <param name="type" value="a"/>
+            <param name="db_aa" value="diamond"/>
+            <param name="map_dna" value="diamond"/>
+            <param name="map_aa" value="diamond"/>
+            <param name="msa" value="mafft"/>
+            <param name="gene_tree1" value="fasttree"/>
+            <param name="tree1" value="astral"/>
+            <param name="diversity" value="high"/>
+            <param name="accuracy" value="true"/>
+            <output name="output">
+				<assert_contents>
+					<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated.+){6}\);"/>
+				</assert_contents>
+				<discovered_dataset designation="gene_trees.tre">
 					<assert_contents>
 						<has_text_matching expression="\(.?(?:GCA_0000(?:0790|0852|1234|1296|1486|2082)5_truncated:.+)+\);"/>
 					</assert_contents>
