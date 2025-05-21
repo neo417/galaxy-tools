@@ -1,0 +1,103 @@
+<tool id="fastspar" name="FastSpar" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
+    <description>
+         correlation estimation for compositional data
+    </description>
+	<macros>
+		<token name="@TOOL_VERSION@">1.0.0</token>
+    </macros>
+	<requirements>
+		<requirement type="package" version="@TOOL_VERSION@">fastspar</requirement>
+		<requirement type="package" version="20250422">parallel</requirement>
+	</requirements>
+    <command detect_errors="exit_code"><![CDATA[
+		fastspar
+			--otu_table $otu_table
+			--iterations $iterations
+			--exclude_iterations $exclude_iterations
+			--threshold $threshold
+			--seed $seed
+			--correlation $correlation
+			--covariance $covariance
+			--threads \${GALAXY_SLOTS:-1}
+			--yes
+		
+		#if $pvalues.calculate
+		 && mkdir bootstrap_counts
+		 && fastspar_bootstrap
+				--otu_table $otu_table
+				--number $pvalues.number
+				--prefix bootstrap_counts/data
+				--seed $pvalues.seed
+				--threads \${GALAXY_SLOTS:-1}
+			
+		 && mkdir bootstrap_correlation
+		 && parallel
+				--max-procs \${GALAXY_SLOTS:-1}
+				fastspar
+					--otu_table {}
+					--correlation bootstrap_correlation/cor_{/}
+					--covariance bootstrap_correlation/cov_{/}
+					## should --iterations be the same as for the main analysis?
+					--iterations 5
+					## should I also add --exclude_iterations, --threshold and/or --seed?
+				::: bootstrap_counts/*
+			
+		 && fastspar_pvalues
+				--otu_table $otu_table
+				--correlation $correlation
+				--prefix bootstrap_correlation/cor_data_
+				--permutations $pvalues.number
+				$pvalues.pseudo
+				--threads \${GALAXY_SLOTS:-1}
+				--outfile $output_pvalues
+		#end if
+    ]]></command>
+    <inputs>
+		<!-- Todo: What is the correct Otu format in galaxy? -->
+		<param argument="--otu_table" type="data" format="tabular" label="Input OTU table"
+			   help="The table must have absolute OTU counts in BIOM format without metadata."/>
+		<param argument="--iterations" type="integer" value="50" label="Number of iterations"
+			   help="Rounds of SparCC correlation estimation."/>
+		<param argument="--exclude_iterations" type="integer" value="10" label="Number of exclusion iterations"
+			   help="The number of times highly correlated OTU pairs are excluded."/>
+		<param argument="--threshold" type="float" value="0.1" label="Exclusion threshold"
+			   help="Correlation strength above which to exclude OTU pairs."/>
+		<param argument="--seed" type="integer" value="1" label="Random number seed"/>
+		<conditional name="pvalues">
+			<param name="calculate" type="boolean" label="Calculate p-values"
+				   help="The p-values are calculated using a permutation based approach."/>
+			<when value="false"/>
+			<when value="true">
+				<param argument="--number" type="integer" label="Number of bootstrap samples"/>
+				<param argument="--seed" type="integer" value="1" label="Random number seed for generating permutations"/>
+				<param argument="--pseudo" type="boolean" truevalue="--pseudo" falsevalue=""
+					   label="Calculate pseudo p-values rather than exact p-values"/>
+			</when>
+		</conditional>
+	</inputs>
+    <outputs>
+		<data name="correlation" format="tabular" label="${tool.name} on ${on_string}: median_correlation.tsv"/>
+		<data name="covariance" format="tabular" label="${tool.name} on ${on_string}: median_covariance.tsv"/>
+		<data name="output_pvalues" format="tabular" label="${tool.name} on ${on_string}: pvalues.tsv">
+			<filter>pvalues['calculate']</filter>
+		</data>
+    </outputs>
+    <tests>
+		<test expect_num_outputs="2">
+            <param name="otu_table" ftype="tabular" value="fake_data.tsv"/>
+            <output name="correlation" file="fake_data_cor.tsv" compare="diff"/>
+            <output name="covariance" file="fake_data_cov.tsv" compare="diff"/>
+        </test>
+    </tests>
+    <help><![CDATA[
+FastSpar is a C++ implementation of the SparCC algorithm which is up to several thousand times faster
+than the original Python2 release and uses much less memory. The FastSpar implementation provides
+threading support and a p-value estimator which accounts for the possibility of repetitious data permutations
+(see this paper for further details).
+
+    ]]></help>
+    <citations>
+		<citation type="doi">10.1093/bioinformatics/bty734</citation>
+		<citation type="doi">10.1371/journal.pcbi.1002687</citation>
+    </citations>
+</tool>
