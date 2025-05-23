@@ -1,13 +1,11 @@
-<tool id="fastspar_reduce" name="FastSpar reduce" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
+<tool id="fastspar_reduce" name="FastSpar reduce" version="@TOOL_VERSION@+@VERSION_SUFFIX@" python_template_version="3.5" profile="21.05">
     <description>
          Filter correlation and p-value table into sparse matrices
     </description>
 	<macros>
-		<token name="@TOOL_VERSION@">1.0.0</token>
+        <import>macros.xml</import>
     </macros>
-	<requirements>
-		<requirement type="package" version="@TOOL_VERSION@">fastspar</requirement>
-	</requirements>
+	<expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
 		fastspar_reduce
 			--correlation_table $correlation_table
@@ -19,7 +17,6 @@
 		 && cp sparse_filtered_pvalue.tsv  $pvalues
     ]]></command>
     <inputs>
-		<!-- Todo: What is the correct Otu format in galaxy? -->
 		<param argument="--correlation_table" type="data" format="tabular" label="Correlation input table"/>
 		<param argument="--pvalue_table" type="data" format="tabular" label="P-value input table"/>
 		<param argument="--correlation" type="float" value="0.1" label="Absolute correlation threshold"/>
@@ -53,8 +50,5 @@ Both tables should be symmetric matrices of the following form:
 
 Additionally, the row and column ids of both tables must have an identical order.
     ]]></help>
-    <citations>
-		<citation type="doi">10.1093/bioinformatics/bty734</citation>
-		<citation type="doi">10.1371/journal.pcbi.1002687</citation>
-    </citations>
+    <expand macro="citations"/>
 </tool>
