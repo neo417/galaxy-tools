@@ -1,0 +1,60 @@
+<tool id="fastspar_reduce" name="FastSpar reduce" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
+    <description>
+         Filter correlation and p-value table into sparse matrices
+    </description>
+	<macros>
+		<token name="@TOOL_VERSION@">1.0.0</token>
+    </macros>
+	<requirements>
+		<requirement type="package" version="@TOOL_VERSION@">fastspar</requirement>
+	</requirements>
+    <command detect_errors="exit_code"><![CDATA[
+		fastspar_reduce
+			--correlation_table $correlation_table
+			--pvalue_table $pvalue_table
+			--correlation $correlation
+			--pvalue $pvalue
+			--output_prefix sparse
+		 && cp sparse_filtered_correlation.tsv $correlations
+		 && cp sparse_filtered_pvalue.tsv  $pvalues
+    ]]></command>
+    <inputs>
+		<!-- Todo: What is the correct Otu format in galaxy? -->
+		<param argument="--correlation_table" type="data" format="tabular" label="Correlation input table"/>
+		<param argument="--pvalue_table" type="data" format="tabular" label="P-value input table"/>
+		<param argument="--correlation" type="float" value="0.1" label="Absolute correlation threshold"/>
+		<param argument="--pvalue" type="float" value="0.05" label="P-value threshold"/>
+	</inputs>
+    <outputs>
+		<data name="correlations" format="tabular" label="${tool.name} on ${on_string}: filtered_correlations.tsv"/>
+		<data name="pvalues" format="tabular" label="${tool.name} on ${on_string}: filtered_pvalues.tsv"/>
+    </outputs>
+    <tests>
+		<test expect_num_outputs="2">
+            <param name="correlation_table" ftype="tabular" value="fake_data_cor.tsv"/>
+            <param name="pvalue_table" ftype="tabular" value="pvalues.tsv"/>
+            <output name="correlations" file="filtered_correlations.tsv" compare="diff"/>
+            <output name="pvalues" file="filtered_pvalues.tsv" compare="diff"/>
+        </test>
+    </tests>
+    <help><![CDATA[
+*FastSpar reduce* extracts entries of the correlation and pvalue tables, which fulfil both threshold values for the respective tables.
+
+Both tables should be symmetric matrices of the following form:
+
+======= ====== ====== ====== ======
+..      1      3      2      ...
+======= ====== ====== ====== ======
+**1**   1.0000 0.7265 0.0656
+**3**   0.7265 1.0000 0.0615
+**2**   0.0656 0.0615 1.0000
+**...**
+======= ====== ====== ====== ======
+
+Additionally, the row and column ids of both tables must have an identical order.
+    ]]></help>
+    <citations>
+		<citation type="doi">10.1093/bioinformatics/bty734</citation>
+		<citation type="doi">10.1371/journal.pcbi.1002687</citation>
+    </citations>
+</tool>
