@@ -17,8 +17,8 @@
 		 && cp sparse_filtered_pvalue.tsv  $pvalues
     ]]></command>
     <inputs>
-		<param argument="--correlation_table" type="data" format="tabular" label="Correlation input table"/>
-		<param argument="--pvalue_table" type="data" format="tabular" label="P-value input table"/>
+		<param argument="--correlation_table" type="data" format="tabular" label="Correlation table"/>
+		<param argument="--pvalue_table" type="data" format="tabular" label="P-value table"/>
 		<param argument="--correlation" type="float" value="0.1" label="Absolute correlation threshold"/>
 		<param argument="--pvalue" type="float" value="0.05" label="P-value threshold"/>
 	</inputs>
