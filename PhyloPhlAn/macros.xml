@@ -32,37 +32,37 @@
 	<!-- PhyloPhlAn input blocks -->
 	<xml name="config_select_software">
 		<conditional name="db">
-			<param type="select" name="type" argument="-d / -t" label="Database marker type">
+			<param name="type" type="select" argument="-d / -t" label="Database marker type">
 				<option value="n">Nucleotides</option>
 				<option value="a">Amino acids</option>
 			</param>
 			<when value="n">
-				<param type="select" argument="--db_dna" label="Nucleotide database">
+				<param argument="--db_dna" type="select" label="Nucleotide database">
 					<option value="makeblastdb">makeblastdb</option>
 				</param>
-				<param type="select" argument="--map_dna" label="Map genomes using">
+				<param argument="--map_dna" type="select" label="Map genomes using">
 					<option value="blastn">blastn</option>
 					<option value="tblastn">tblastn</option>
 					<option value="diamond">diamond</option>
 				</param>
 			</when>
 			<when value="a">
-				<param type="select" argument="--db_aa" label="Amino acid database">
+				<param argument="--db_aa" type="select" label="Amino acid database">
 					<option value="diamond">diamond</option>
 					<option value="usearch">usearch</option>
 				</param>
-				<param type="select" argument="--map_aa" label="Map proteomes using">
+				<param argument="--map_aa" type="select" label="Map proteomes using">
 					<option value="diamond">diamond</option>
 					<option value="usearch">usearch</option>
 				</param>
-				<param type="select" argument="--map_dna" label="Map genomes using" optional="true">
+				<param argument="--map_dna" type="select" optional="true" label="Map genomes using">
 					<option value="diamond">diamond</option>
 					<option value="blastn">blastn</option>
 					<option value="tblastn">tblastn</option>
 				</param>
 			</when>
 		</conditional>
-		<param type="select" argument="--msa" label="Multiple-sequence alignment">
+		<param argument="--msa" type="select" label="Multiple-sequence alignment">
 			<option value="mafft">mafft</option>
 			<option value="muscle">muscle</option>
 			<!-- <option value="opal">opal</option> -->
@@ -85,7 +85,7 @@
     </xml>
     <xml name="citations">
         <citations>
-			<citation type="doi">10.1038/s41467-020-16366-7</citation>
+    		<citation type="doi">10.1038/s41467-020-16366-7</citation>
             <yield/>
         </citations>
     </xml>

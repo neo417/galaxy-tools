@@ -15,19 +15,19 @@
 			--verbose
     ]]></command>
     <inputs>
-        <param type="data" name="input1" format="tabular" help='(-i)'/>
-        <param type="data" name="input_mapping" format="tabular" help='A mapping file that maps each bin to its metagenome (--map)'/>
-        <param type="integer" name="number" value="20" label="number of SGBs to display in the figure" help='(--top)'/>
-		<param name="out_format" type="select" label="output image format" help='(-f)'>
+        <param name="input1" type="data" format="tabular" argument="-i"/>
+        <param name="input_mapping" type="data" format="tabular" argument="--map" help='A mapping file that maps each bin to its metagenome'/>
+        <param name="number" type="integer" value="20" argument="--top" label="number of SGBs to display in the figure"/>
+		<param name="out_format" type="select" argument="-f" label="output image format">
 			<option value="pdf">pdf</option>
 			<option value="svg">svg</option>
 			<option value="png">png</option>
 		</param>
-        <param type="integer" name="dpi" value="200" label="dpi of output" help='(--dpi)'/>
+        <param argument="--dpi" type="integer" value="200" label="dpi of output"/>
     </inputs>
     <outputs>
-        <data format="data" name="output1">
-			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.pdf" format="pdf" visible="true" assign_primary_output="true" />
+        <data name="output1" format="data">
+    		<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.pdf" format="pdf" visible="true" assign_primary_output="true" />
 			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.svg" format="svg" visible="true" assign_primary_output="true" />
 			<discover_datasets pattern="output_heatmap_(?P&lt;designation&gt;.*)\.png" format="png" visible="true" assign_primary_output="true" />
 		</data>
