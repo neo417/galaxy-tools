@@ -5,10 +5,9 @@
 	<macros>
         <import>macros.xml</import>
     </macros>
-	<expand macro="requirements">
-		<requirement type="package" version="2.3">mash</requirement>
-	</expand>
-    <command detect_errors="exit_code"><![CDATA[
+    <expand macro="biotools"/>
+	<expand macro="requirements_assign_sgbs"/>
+	<command detect_errors="exit_code"><![CDATA[
 		#import re
 		
 		mkdir -p 'input/' &&
@@ -79,6 +78,8 @@
 				<param argument="-n" type="integer" value="1" label="How many SGBs to assign to each input genome"/>
 				<param name="assign_all" type="boolean" label="Assign all SGBs"/>
 			</when>
+			<when value="taxonomy"/> <!-- Todo -->
+			<when value="matrix"/> <!-- Todo -->
 		</conditional>
 	</inputs>
     <outputs>

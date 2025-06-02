@@ -1,22 +1,84 @@
 <macros>
 	<token name="@TOOL_VERSION@">3.1.1</token>
     <token name="@VERSION_SUFFIX@">galaxy0</token>
-    <xml name="requirements">
+	
+	<!-- Requirements -->
+	<xml name="requirements">
         <requirements>
 			<requirement type="package" version="@TOOL_VERSION@">phylophlan</requirement>
-            <requirement type="package" version="2.1.11">diamond</requirement>
-            <requirement type="package" version="2.16.0">blast</requirement>
-            <requirement type="package" version="12.0">usearch</requirement>
-            <requirement type="package" version="5.3">muscle</requirement>
-            <requirement type="package" version="7.526">mafft</requirement>
-            <requirement type="package" version="2.1.10">fasttree</requirement>
-            <requirement type="package" version="8.2.12">raxml</requirement>
-            <requirement type="package" version="2.4.0">iqtree</requirement>
-            <requirement type="package" version="5.7.8">astral-tree</requirement>
-            <requirement type="package" version="3.11">python</requirement>
+			<yield/>
+			<requirement type="package" version="3.11">python</requirement>
         </requirements>
     </xml>
-     <xml name="biotools">
+    <xml name="requirements_phylophlan">
+		<expand macro="requirements">
+			<requirement type="package" version="2.1.11">diamond</requirement>
+			<requirement type="package" version="2.16.0">blast</requirement>
+			<requirement type="package" version="12.0">usearch</requirement>
+			<requirement type="package" version="5.3">muscle</requirement>
+			<requirement type="package" version="7.526">mafft</requirement>
+			<requirement type="package" version="2.1.10">fasttree</requirement>
+			<requirement type="package" version="8.2.12">raxml</requirement>
+			<requirement type="package" version="2.4.0">iqtree</requirement>
+			<requirement type="package" version="5.7.8">astral-tree</requirement>
+		</expand>
+    </xml>
+	<xml name="requirements_assign_sgbs">
+		<expand macro="requirements">
+			<requirement type="package" version="2.3">mash</requirement>
+		</expand>
+    </xml>
+	
+	<!-- PhyloPhlAn input blocks -->
+	<xml name="config_select_software">
+		<conditional name="db">
+			<param type="select" name="type" argument="-d / -t" label="Database marker type">
+				<option value="n">Nucleotides</option>
+				<option value="a">Amino acids</option>
+			</param>
+			<when value="n">
+				<param type="select" argument="--db_dna" label="Nucleotide database">
+					<option value="makeblastdb">makeblastdb</option>
+				</param>
+				<param type="select" argument="--map_dna" label="Map genomes using">
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+					<option value="diamond">diamond</option>
+				</param>
+			</when>
+			<when value="a">
+				<param type="select" argument="--db_aa" label="Amino acid database">
+					<option value="diamond">diamond</option>
+					<option value="usearch">usearch</option>
+				</param>
+				<param type="select" argument="--map_aa" label="Map proteomes using">
+					<option value="diamond">diamond</option>
+					<option value="usearch">usearch</option>
+				</param>
+				<param type="select" argument="--map_dna" label="Map genomes using" optional="true">
+					<option value="diamond">diamond</option>
+					<option value="blastn">blastn</option>
+					<option value="tblastn">tblastn</option>
+				</param>
+			</when>
+		</conditional>
+		<param type="select" argument="--msa" label="Multiple-sequence alignment">
+			<option value="mafft">mafft</option>
+			<option value="muscle">muscle</option>
+			<!-- <option value="opal">opal</option> -->
+			<!-- <option value="upp">upp</option> -->
+		</param>
+		<yield/>
+	</xml>
+	<xml name="config_supertree_maas">
+		<param name="maas" type="data" format="tabular" label="Substitution models"
+			   help="The file should be a mapping from amino acid markers to their respective (raxml) substitution model to use for gene tree reconstruction."/>
+			<!-- WARNING! PhyloPhlAn sends the second column of the file to raxml via the command line. -->
+			<!-- Todo: Provide default model file for the included phylophlan database. -->
+	</xml>
+	
+	<!-- Misc -->
+    <xml name="biotools">
         <xrefs>
             <xref type="bio.tools">PhyloPhlAn</xref>
         </xrefs>

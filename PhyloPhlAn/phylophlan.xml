@@ -3,59 +3,11 @@
          microbial genome characterization and phylogenetic analysis
     </description>
 	<macros>
-		<expand macro="biotools"/>
-		<expand macro="requirements"/>
         <import>macros.xml</import>
-		<xml name="config_select_software">
-			<conditional name="db">
-				<param type="select" name="type" argument="-d / -t" label="Database marker type">
-					<option value="n">Nucleotides</option>
-					<option value="a">Amino acids</option>
-				</param>
-				<when value="n">
-					<param type="select" argument="--db_dna" label="Nucleotide database">
-						<option value="makeblastdb">makeblastdb</option>
-					</param>
-					<param type="select" argument="--map_dna" label="Map genomes using">
-						<option value="blastn">blastn</option>
-						<option value="tblastn">tblastn</option>
-						<option value="diamond">diamond</option>
-					</param>
-				</when>
-				<when value="a">
-					<param type="select" argument="--db_aa" label="Amino acid database">
-						<option value="diamond">diamond</option>
-						<option value="usearch">usearch</option>
-					</param>
-					<param type="select" argument="--map_aa" label="Map proteomes using">
-						<option value="diamond">diamond</option>
-						<option value="usearch">usearch</option>
-					</param>
-					<param type="select" argument="--map_dna" label="Map genomes using" optional="true">
-						<option value="diamond">diamond</option>
-						<option value="blastn">blastn</option>
-						<option value="tblastn">tblastn</option>
-					</param>
-				</when>
-			</conditional>
-			<param type="select" argument="--msa" label="Multiple-sequence alignment">
-				<option value="mafft">mafft</option>
-				<option value="muscle">muscle</option>
-				<!-- <option value="opal">opal</option> -->
-				<!-- <option value="upp">upp</option> -->
-			</param>
-            <yield/>
-		</xml>
-		<xml name="config_supertree_maas">
-			<param name="maas" type="data" format="tabular" label="Substitution models"
-				   help="The file should be a mapping from amino acid markers to their respective (raxml) substitution model to use for gene tree reconstruction."/>
-				<!-- WARNING! PhyloPhlAn sends the second column of the file to raxml via the command line.
-					 Is the manual validation correct and not too restrictive?-->
-				<!-- Todo: Provide default model file for the included phylophlan database. -->
-		</xml>
     </macros>
-		
-    <command detect_errors="exit_code"><![CDATA[
+    <expand macro="biotools"/>
+	<expand macro="requirements_phylophlan"/>
+	<command detect_errors="exit_code"><![CDATA[
 		#import re
 		
 		#if "nt" in $config.analysis.value

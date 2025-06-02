@@ -1,9 +1,10 @@
 <tool id="phylophlan_draw_metagenomic" name="Visualize metagenomic SGBs as Heatmaps" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
-    <macros>
+	<macros>
         <import>macros.xml</import>
     </macros>
+    <expand macro="biotools"/>
 	<expand macro="requirements"/>
-    <command detect_errors="exit_code"><![CDATA[
+	<command detect_errors="exit_code"><![CDATA[
         phylophlan_draw_metagenomic
 			-i '$input1'
 			## -o '$output1'
