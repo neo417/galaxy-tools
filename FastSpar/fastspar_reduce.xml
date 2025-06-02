@@ -1,4 +1,4 @@
-<tool id="fastspar_reduce" name="FastSpar reduce" version="@TOOL_VERSION@+@VERSION_SUFFIX@" python_template_version="3.5" profile="21.05">
+<tool id="fastspar_reduce" name="FastSpar: Reduce correlation table" version="@TOOL_VERSION@+@VERSION_SUFFIX@" profile="24.2">
     <description>
          Filter correlation and p-value table into sparse matrices
     </description>
@@ -35,20 +35,41 @@
         </test>
     </tests>
     <help><![CDATA[
-*FastSpar reduce* extracts entries of the correlation and pvalue tables, which fulfil both threshold values for the respective tables.
+What it does
+============
 
-Both tables should be symmetric matrices of the following form:
+This tool filters pairwise correlations and p-values from FastSpar outputs to generate sparse matrices suitable for network construction or visualization. It is typically used as the final step in a FastSpar pipeline.
 
-======= ====== ====== ====== ======
-..      1      3      2      ...
-======= ====== ====== ====== ======
-**1**   1.0000 0.7265 0.0656
-**3**   0.7265 1.0000 0.0615
-**2**   0.0656 0.0615 1.0000
-**...**
-======= ====== ====== ====== ======
+Filtering Criteria
+==================
 
-Additionally, the row and column ids of both tables must have an identical order.
+- **Absolute correlation threshold**: Only retain OTU pairs whose absolute correlation exceeds this value.
+- **P-value threshold**: Only retain OTU pairs whose empirical p-value is below this cutoff.
+
+Both conditions must be satisfied (logical AND).
+
+Required Inputs
+===============
+
+- **Correlation table**: A symmetric matrix from FastSpar.
+- **P-value table**: A matching symmetric matrix from FastSpar p-value estimation.
+
+Generated Outputs
+=================
+
+- `filtered_correlations.tsv`: Correlation values that passed both thresholds.
+- `filtered_pvalues.tsv`: Matching p-values for retained entries.
+
+Notes
+=====
+
+- Both input matrices must have identical dimensions and OTU order.
+- The output tables are still symmetric and retain all diagonal values (e.g., self-correlations).
+
+Additional Resources
+====================
+
+- FastSpar GitHub: https://github.com/scwatts/fastspar
     ]]></help>
     <expand macro="citations"/>
 </tool>
