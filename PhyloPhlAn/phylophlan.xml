@@ -1,8 +1,10 @@
-<tool id="phylophlan" name="PhyloPhlAn" version="@TOOL_VERSION@+galaxy0" python_template_version="3.5" profile="21.05">
+<tool id="phylophlan" name="PhyloPhlAn" version="@TOOL_VERSION@+galaxy0" profile="24.2">
     <description>
          microbial genome characterization and phylogenetic analysis
     </description>
 	<macros>
+		<expand macro="biotools"/>
+		<expand macro="requirements"/>
         <import>macros.xml</import>
 		<xml name="config_select_software">
 			<conditional name="db">
@@ -52,23 +54,7 @@
 				<!-- Todo: Provide default model file for the included phylophlan database. -->
 		</xml>
     </macros>
-	<expand macro="requirements">
-		<requirement type="package" version="3.11">python</requirement>
-		<requirement type="package" version="2.1.11">diamond</requirement>
-		<requirement type="package" version="2.16.0">blast</requirement>
-		<requirement type="package" version="12.0">usearch</requirement>
 		
-		<requirement type="package" version="5.3">muscle</requirement>
-		<requirement type="package" version="7.526">mafft</requirement>
-		<!-- <requirement type="package" version="">opal</requirement> -->
-		<!-- <requirement type="package" version="">upp</requirement> -->
-		
-		<requirement type="package" version="2.1.10">fasttree</requirement>
-		<requirement type="package" version="8.2.12">raxml</requirement>
-		<requirement type="package" version="2.4.0">iqtree</requirement>
-		<requirement type="package" version="5.7.8">astral-tree</requirement>
-		<!-- <requirement type="package" version="">astrid</requirement> -->
-	</expand>
     <command detect_errors="exit_code"><![CDATA[
 		#import re
 		
@@ -246,7 +232,7 @@ for line in open(sys.argv[1], 'r'):
 			   help="In order for PhyloPhlAn to detect the input files in the collection, the fasta files MUST have the extensions '.fna' for nucleotide sequences and '.faa' for amino acid sequences. (Or '.fna.gz' and '.faa.gz' respectively.)"/>
 		<param name="database" type="data" format="fasta" label="Reference Database"/>
 		<conditional name="config">
-			<param type="select" name="analysis" label="Configure which external software to use for the analysis">
+			<param name="analysis" type="select" label="Configure which external software to use for the analysis">
 					<option value="supermatrix_nt">supermatrix_nt (blast, mafft, fasttree, raxml)</option>
 					<option value="supertree_nt">supertree_nt (blast, mafft, fasttree, raxml, astral)</option>
 					<option value="supermatrix_aa">supermatrix_aa (diamond, mafft, fasttree, raxml)</option>
@@ -327,7 +313,7 @@ for line in open(sys.argv[1], 'r'):
 				   help="Discard input genomes or proteomes that map to less markers."/> <!-- default changes for special -d databases -->
 			<param argument="--min_num_entries" type="integer" value="4" label="Minimum found entries."
 				   help="Discard markers that are found in less inputs than this."/>
-			<param argument="--remove_fragmentary_entries" type="boolean" truevalue="--remove_fragmentary_entries" falsevalue=""
+			<param argument="--remove_fragmentary_entries" type="boolean" truevalue="--remove_fragmentary_entries" falsevalue="" checked="false"
 				   label="Remove fragmentary entries"/>
 			<param argument="--fragmentary_threshold" type="float" optional="true" label="Fragmentary threshold"
 				   help="The fraction of gaps in the MSA to be considered fragmentary."/>
@@ -452,7 +438,9 @@ for line in open(sys.argv[1], 'r'):
 				</collection>
 			</param>
             <param name="database" ftype="fasta" value="database_trunc.faa"/>
-            <param name="analysis" value="supermatrix_aa"/>
+			<conditional name="config">
+            	<param name="analysis" value="supermatrix_aa"/>
+			</conditional>
             <param name="diversity" value="low"/>
             <param name="accuracy" value="false"/>
 			<section name="quality">
@@ -460,7 +448,9 @@ for line in open(sys.argv[1], 'r'):
 				<param name="remove_fragmentary_entries" value="true"/>
 				<param name="fragmentary_threshold" value="0.67"/>
 			</section>
-            <param name="trim" value="gap_trim"/>
+			<conditional name="trimming">
+				<param name="trim" value="gap_trim"/>
+			</conditional>
             <param name="force_nucleotides" value="true"/>
             <output name="output">
 				<assert_contents>
@@ -486,13 +476,19 @@ for line in open(sys.argv[1], 'r'):
 				</collection>
 			</param>
             <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
-            <param name="analysis" value="custom_supermatrix"/>
-            <param name="type" value="a"/>
-            <param name="db_aa" value="diamond"/>
-            <param name="map_dna" value="diamond"/>
-            <param name="map_aa" value="diamond"/>
-            <param name="msa" value="mafft"/>
-            <param name="tree1" value="iqtree"/>
+			<conditional name="config">
+				<param name="analysis" value="custom_supermatrix"/>
+				<conditional name="db">
+					<param name="type" value="a"/>
+					<param name="db_aa" value="diamond"/>
+					<param name="map_dna" value="diamond"/>
+					<param name="map_aa" value="diamond"/>
+				</conditional>
+				<param name="msa" value="mafft"/>
+				<section name="tree">
+					<param name="tree1" value="iqtree"/>
+				</section>
+			</conditional>
             <param name="diversity" value="high"/>
             <param name="accuracy" value="true"/>
             <output name="output">
@@ -524,15 +520,23 @@ for line in open(sys.argv[1], 'r'):
 				</collection>
 			</param>
             <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
-            <param name="analysis" value="custom_supertree"/>
-			<param name="maas" ftype="tabular" value="phylophlan.tsv"/>
-            <param name="type" value="a"/>
-            <param name="db_aa" value="diamond"/>
-            <param name="map_dna" value="diamond"/>
-            <param name="map_aa" value="diamond"/>
-            <param name="msa" value="mafft"/>
-            <param name="gene_tree1" value="fasttree"/>
-            <param name="tree1" value="astral"/>
+			<conditional name="config">
+				<param name="analysis" value="custom_supertree"/>
+				<param name="maas" value="phylophlan.tsv"/>
+				<conditional name="db">
+					<param name="type" value="a"/>
+					<param name="db_aa" value="diamond"/>
+					<param name="map_dna" value="diamond"/>
+					<param name="map_aa" value="diamond"/>
+				</conditional>
+        		<param name="msa" value="mafft"/>
+        		<section name="gene_tree">
+            		<param name="gene_tree1" value="fasttree"/>
+        		</section>		
+        		<section name="tree">
+            		<param name="tree1" value="astral"/>
+        		</section>
+			</conditional>
             <param name="diversity" value="high"/>
             <param name="accuracy" value="true"/>
             <output name="output">

@@ -1,10 +1,25 @@
 <macros>
 	<token name="@TOOL_VERSION@">3.1.1</token>
+    <token name="@VERSION_SUFFIX@">galaxy0</token>
     <xml name="requirements">
         <requirements>
 			<requirement type="package" version="@TOOL_VERSION@">phylophlan</requirement>
-            <yield/>
+            <requirement type="package" version="2.1.11">diamond</requirement>
+            <requirement type="package" version="2.16.0">blast</requirement>
+            <requirement type="package" version="12.0">usearch</requirement>
+            <requirement type="package" version="5.3">muscle</requirement>
+            <requirement type="package" version="7.526">mafft</requirement>
+            <requirement type="package" version="2.1.10">fasttree</requirement>
+            <requirement type="package" version="8.2.12">raxml</requirement>
+            <requirement type="package" version="2.4.0">iqtree</requirement>
+            <requirement type="package" version="5.7.8">astral-tree</requirement>
+            <requirement type="package" version="3.11">python</requirement>
         </requirements>
+    </xml>
+     <xml name="biotools">
+        <xrefs>
+            <xref type="bio.tools">PhyloPhlAn</xref>
+        </xrefs>
     </xml>
     <xml name="citations">
         <citations>
