@@ -1,83 +1,83 @@
 <macros>
-	<token name="@TOOL_VERSION@">3.1.1</token>
+    <token name="@TOOL_VERSION@">3.1.1</token>
     <token name="@VERSION_SUFFIX@">galaxy0</token>
-	
-	<!-- Requirements -->
-	<xml name="requirements">
+    
+    <!-- Requirements -->
+    <xml name="requirements">
         <requirements>
-			<requirement type="package" version="@TOOL_VERSION@">phylophlan</requirement>
-			<yield/>
-			<requirement type="package" version="3.11">python</requirement>
+            <requirement type="package" version="@TOOL_VERSION@">phylophlan</requirement>
+            <yield/>
+            <requirement type="package" version="3.11">python</requirement>
         </requirements>
     </xml>
     <xml name="requirements_phylophlan">
-		<expand macro="requirements">
-			<requirement type="package" version="2.1.11">diamond</requirement>
-			<requirement type="package" version="2.16.0">blast</requirement>
-			<requirement type="package" version="12.0">usearch</requirement>
-			<requirement type="package" version="5.3">muscle</requirement>
-			<requirement type="package" version="7.526">mafft</requirement>
-			<requirement type="package" version="2.1.10">fasttree</requirement>
-			<requirement type="package" version="8.2.12">raxml</requirement>
-			<requirement type="package" version="2.4.0">iqtree</requirement>
-			<requirement type="package" version="5.7.8">astral-tree</requirement>
-		</expand>
+        <expand macro="requirements">
+            <requirement type="package" version="2.1.11">diamond</requirement>
+            <requirement type="package" version="2.16.0">blast</requirement>
+            <requirement type="package" version="12.0">usearch</requirement>
+            <requirement type="package" version="5.3">muscle</requirement>
+            <requirement type="package" version="7.526">mafft</requirement>
+            <requirement type="package" version="2.1.10">fasttree</requirement>
+            <requirement type="package" version="8.2.12">raxml</requirement>
+            <requirement type="package" version="2.4.0">iqtree</requirement>
+            <requirement type="package" version="5.7.8">astral-tree</requirement>
+        </expand>
     </xml>
-	<xml name="requirements_assign_sgbs">
-		<expand macro="requirements">
-			<requirement type="package" version="2.3">mash</requirement>
-		</expand>
+    <xml name="requirements_assign_sgbs">
+        <expand macro="requirements">
+            <requirement type="package" version="2.3">mash</requirement>
+        </expand>
     </xml>
-	
-	<!-- PhyloPhlAn input blocks -->
-	<xml name="config_select_software">
-		<conditional name="db">
-			<param name="type" type="select" argument="-d / -t" label="Database marker type">
-				<option value="n">Nucleotides</option>
-				<option value="a">Amino acids</option>
-			</param>
-			<when value="n">
-				<param argument="--db_dna" type="select" label="Nucleotide database">
-					<option value="makeblastdb">makeblastdb</option>
-				</param>
-				<param argument="--map_dna" type="select" label="Map genomes using">
-					<option value="blastn">blastn</option>
-					<option value="tblastn">tblastn</option>
-					<option value="diamond">diamond</option>
-				</param>
-			</when>
-			<when value="a">
-				<param argument="--db_aa" type="select" label="Amino acid database">
-					<option value="diamond">diamond</option>
-					<option value="usearch">usearch</option>
-				</param>
-				<param argument="--map_aa" type="select" label="Map proteomes using">
-					<option value="diamond">diamond</option>
-					<option value="usearch">usearch</option>
-				</param>
-				<param argument="--map_dna" type="select" optional="true" label="Map genomes using">
-					<option value="diamond">diamond</option>
-					<option value="blastn">blastn</option>
-					<option value="tblastn">tblastn</option>
-				</param>
-			</when>
-		</conditional>
-		<param argument="--msa" type="select" label="Multiple-sequence alignment">
-			<option value="mafft">mafft</option>
-			<option value="muscle">muscle</option>
-			<!-- <option value="opal">opal</option> -->
-			<!-- <option value="upp">upp</option> -->
-		</param>
-		<yield/>
-	</xml>
-	<xml name="config_supertree_maas">
-		<param name="maas" type="data" format="tabular" label="Substitution models"
-			   help="The file should be a mapping from amino acid markers to their respective (raxml) substitution model to use for gene tree reconstruction."/>
-			<!-- WARNING! PhyloPhlAn sends the second column of the file to raxml via the command line. -->
-			<!-- Todo: Provide default model file for the included phylophlan database. -->
-	</xml>
-	
-	<!-- Misc -->
+    
+    <!-- PhyloPhlAn input blocks -->
+    <xml name="config_select_software">
+        <conditional name="db">
+            <param name="type" type="select" argument="-d / -t" label="Database marker type">
+                <option value="n">Nucleotides</option>
+                <option value="a">Amino acids</option>
+            </param>
+            <when value="n">
+                <param argument="--db_dna" type="select" label="Nucleotide database">
+                    <option value="makeblastdb">makeblastdb</option>
+                </param>
+                <param argument="--map_dna" type="select" label="Map genomes using">
+                    <option value="blastn">blastn</option>
+                    <option value="tblastn">tblastn</option>
+                    <option value="diamond">diamond</option>
+                </param>
+            </when>
+            <when value="a">
+                <param argument="--db_aa" type="select" label="Amino acid database">
+                    <option value="diamond">diamond</option>
+                    <option value="usearch">usearch</option>
+                </param>
+                <param argument="--map_aa" type="select" label="Map proteomes using">
+                    <option value="diamond">diamond</option>
+                    <option value="usearch">usearch</option>
+                </param>
+                <param argument="--map_dna" type="select" optional="true" label="Map genomes using">
+                    <option value="diamond">diamond</option>
+                    <option value="blastn">blastn</option>
+                    <option value="tblastn">tblastn</option>
+                </param>
+            </when>
+        </conditional>
+        <param argument="--msa" type="select" label="Multiple-sequence alignment">
+            <option value="mafft">mafft</option>
+            <option value="muscle">muscle</option>
+            <!-- <option value="opal">opal</option> -->
+            <!-- <option value="upp">upp</option> -->
+        </param>
+        <yield/>
+    </xml>
+    <xml name="config_supertree_maas">
+        <param name="maas" type="data" format="tabular" label="Substitution models"
+               help="The file should be a mapping from amino acid markers to their respective (raxml) substitution model to use for gene tree reconstruction."/>
+            <!-- WARNING! PhyloPhlAn sends the second column of the file to raxml via the command line. -->
+            <!-- Todo: Provide default model file for the included phylophlan database. -->
+    </xml>
+    
+    <!-- Misc -->
     <xml name="biotools">
         <xrefs>
             <xref type="bio.tools">PhyloPhlAn</xref>
@@ -85,7 +85,7 @@
     </xml>
     <xml name="citations">
         <citations>
-    		<citation type="doi">10.1038/s41467-020-16366-7</citation>
+            <citation type="doi">10.1038/s41467-020-16366-7</citation>
             <yield/>
         </citations>
     </xml>
