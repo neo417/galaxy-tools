@@ -168,9 +168,9 @@
     ]]></command>
     <inputs>
         <!-- Todo: Handle input/database files with unexpected filenames/designations -->
-        <param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"
+        <param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input genomes and/or proteomes"
                help="In order for PhyloPhlAn to detect the input files in the collection, the fasta files MUST have the extensions '.fna' for nucleotide sequences and '.faa' for amino acid sequences. (Or '.fna.gz' and '.faa.gz' respectively.)"/>
-        <param name="database" type="data" format="fasta,fasta.gz" label="Reference Database"/>
+        <param name="database" type="data" format="fasta,fasta.gz" label="Reference database of markers"/>
         <conditional name="config">
             <param name="analysis" type="select" label="Configure which external software to use for the analysis">
                     <option value="supermatrix_nt">Nucleotide supermatrix (blast, mafft, fasttree, raxml)</option>
@@ -487,12 +487,48 @@
         </test>
     </tests>
     <help><![CDATA[
-PhyloPhlAn is an accurate, rapid, and easy-to-use method for large-scale microbial genome characterization and
-phylogenetic analysis at multiple levels of resolution. PhyloPhlAn can assign finished, draft, or metagenome-assembled
-genomes (MAGs) to species-level genome bins (SGBs). For individual clades of interest (e.g. newly sequenced genome
-sets), PhyloPhlAn reconstructs strain-level phylogenies from among the closest species using clade-specific maximally
-informative markers. At the other extreme of resolution, PhyloPhlAn scales to very-large phylogenies comprising
->17,000 microbial species
+PhyloPhlAn is an integrated pipeline for large-scale phylogenetic profiling of genomes and metagenomes.
+It is an accurate, rapid, and easy-to-use method for large-scale microbial genome characterization and phylogenetic analysis at multiple levels of resolution. 
+
+When using PhyloPhlAn 3, the user can customize each step of the pipeline to build the tree (marker genes identification,
+multiple sequence alignment, concatenation or gene trees inference, and phylogeny reconstruction).
+
+Required Inputs
+===============
+
+- **Input input genomes and/or proteomes**: A collection of (compressed) FASTA files. 
+  Genome and proteome inputs can be mixed and are distinguished by the .fna and .faa extension, respectively.
+- **Reference database of markers**: A multi-fasta file containing the marker sequences.
+- **Substitution models** (for the supertree pipeline): A mapping from amino acid markers to their respective (raxml) substitution model.
+
+When both markers and inputs are nucleotides, the phylogenetic analysis will be done on nucleotides.
+Otherwise, it will proceed in translated sequence space (amino acids). If the inputs are all genomes,
+the user can decide to specify the --force_nucletides parameter to perform the phylogenetic analysis on nucleotides.
+
+Main Parameters
+===============
+
+- **Software Configuration**: Tune the pipeline according to the input and the type of markers in the database:
+
+  - Choose one of four predefined configurations for different database types and analysis pipelines.
+  - OR assemble a custom pipeline from available external software (make sure to select the appropriate database type).
+- **Diversity** (--diversity) and **Accuracy** (--accurate or --fast): Set default values for several parameters at once
+  (trimming, subsampling, fragmentary removal, etc.) in accordance with the expected diversity of the phylogeny to be built.
+  [See https://github.com/biobakery/phylophlan/wiki#accurate-or-fast-1]
+- **Input quality thresholds**: Specify minimum requirements to include inputs and markers in the analysis and how to deal with gaps in the MSA.
+- **Trimming strategy** (--trim): Which strategies to use for trimming.
+- **Subsampling** (--subsample): allows retaining only a certain amount of phylogenetically relevant positions.
+- **Force nucleotides** (--force_nucleotides): Perform the phylogenetic analysis on nucleotides (Ignore proteomes in the input collection).
+- **Sort markers** (--sort): sort the markers and consider them in a specific order (used only for the supermatrix pipeline).
+
+Generated Outputs
+=================
+
+Notes
+=====
+
+Additional Resources
+====================
 
     ]]></help>
     <expand macro="citations"/>
