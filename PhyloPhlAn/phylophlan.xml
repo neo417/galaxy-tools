@@ -7,6 +7,9 @@
     </macros>
     <expand macro="biotools"/>
     <expand macro="requirements_phylophlan"/>
+    <required_files>
+        <include path="validate_mapping_file.py"/>
+    </required_files>
     <command detect_errors="exit_code"><![CDATA[
         #import re
         
@@ -25,10 +28,10 @@
         #end for
         
         mkdir -p 'database/' &&
-        #if $db_type == "n"
-            ln -s '$database' 'database/database.fna' &&
+        #if $database.file_ext == "fasta"
+            ln -s '$database' 'database/database.f${db_type}a' &&
         #else
-            ln -s '$database' 'database/database.faa' &&
+            gzip -d -c '$database' > 'database/database.f${db_type}a' &&
         #end if
         
         phylophlan_write_config_file
@@ -100,7 +103,7 @@
         sed -i "\%program_name.*astral%s%=.*%= `which astral`%" config.cfg &&
         
         #if "supertree" in $config.analysis.value
-            python $validate_mapping_file $config.maas &&
+            python '${__tool_directory__}/validate_mapping_file.py' '$config.maas' &&
         #end if
         
         phylophlan
@@ -113,7 +116,7 @@
             $accuracy
             
             #if "supertree" in $config.analysis.value
-                --maas $config.maas
+                --maas '$config.maas'
             #end if
             
             --min_num_proteins $quality.min_num_proteins
@@ -163,34 +166,19 @@
             --nproc \${GALAXY_SLOTS:-4}
             --verbose
     ]]></command>
-    <configfiles>
-        <configfile name="validate_mapping_file">
-import sys
-import string
-print("Validating --maas mapping file ...")
-allowed = set(string.ascii_letters + string.digits + '._-')
-for line in open(sys.argv[1], 'r'):
-    if line.startswith('#'):
-        continue
-    for s in line.strip().split('\t'):
-        if not set(s).issubset(allowed):
-            print(f"Invalid line in mapping file: {line}")
-            sys.exit(1)
-        </configfile>
-    </configfiles>
     <inputs>
         <!-- Todo: Handle input/database files with unexpected filenames/designations -->
         <param name="input" type="data_collection" collection_type="list" format="fasta,fasta.gz" label="Input Dataset"
                help="In order for PhyloPhlAn to detect the input files in the collection, the fasta files MUST have the extensions '.fna' for nucleotide sequences and '.faa' for amino acid sequences. (Or '.fna.gz' and '.faa.gz' respectively.)"/>
-        <param name="database" type="data" format="fasta" label="Reference Database"/>
+        <param name="database" type="data" format="fasta,fasta.gz" label="Reference Database"/>
         <conditional name="config">
             <param name="analysis" type="select" label="Configure which external software to use for the analysis">
-                    <option value="supermatrix_nt">supermatrix_nt (blast, mafft, fasttree, raxml)</option>
-                    <option value="supertree_nt">supertree_nt (blast, mafft, fasttree, raxml, astral)</option>
-                    <option value="supermatrix_aa">supermatrix_aa (diamond, mafft, fasttree, raxml)</option>
-                    <option value="supertree_aa">supertree_aa (diamond, mafft, fasttree, raxml, astral)</option>
-                    <option value="custom_supermatrix">Custom Supermatrix pipeline</option>
-                    <option value="custom_supertree">Custom Supertree pipeline</option>
+                    <option value="supermatrix_nt">Nucleotide supermatrix (blast, mafft, fasttree, raxml)</option>
+                    <option value="supertree_nt">Nucleotide supertree (blast, mafft, fasttree, raxml, astral)</option>
+                    <option value="supermatrix_aa">Amino acid supermatrix (diamond, mafft, fasttree, raxml)</option>
+                    <option value="supertree_aa">Amino acid supertree (diamond, mafft, fasttree, raxml, astral)</option>
+                    <option value="custom_supermatrix">Custom supermatrix (or concatenation) pipeline</option>
+                    <option value="custom_supertree">Custom supertree (or gene trees) pipeline</option>
             </param>
             <when value="supermatrix_nt"/>
             <when value="supertree_nt">
@@ -422,7 +410,7 @@ for line in open(sys.argv[1], 'r'):
                     <element name="GCA_000020825_truncated.fna" ftype="fasta" value="GCA_000020825_truncated.fna"/>
                 </collection>
             </param>
-            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
+            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa.gz"/>
             <conditional name="config">
                 <param name="analysis" value="custom_supermatrix"/>
                 <conditional name="db">
@@ -466,7 +454,7 @@ for line in open(sys.argv[1], 'r'):
                     <element name="GCA_000020825_truncated.fna" ftype="fasta" value="GCA_000020825_truncated.fna"/>
                 </collection>
             </param>
-            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa"/>
+            <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa.gz"/>
             <conditional name="config">
                 <param name="analysis" value="custom_supertree"/>
                 <param name="maas" value="phylophlan.tsv"/>
