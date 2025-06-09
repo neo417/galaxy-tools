@@ -527,7 +527,7 @@ Generated Outputs
 
 The specific outputs depend on the type of analysis and the specific software configuration.
 
-**Supermatrix (fasttree / raxml) **
+**Supermatrix (fasttree / raxml)**
   - concatenated.aln: Final alignment.
   - input.tre: Initial Approximately-Maximum-Likelihood Trees of the phylogeny.
   - resolved.tre: Phylogeny with polytomies resolved.
