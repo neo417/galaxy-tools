@@ -7,6 +7,7 @@
         <requirements>
             <requirement type="package" version="@TOOL_VERSION@">phylophlan</requirement>
             <yield/>
+            <!-- phylophlan uses python disutils which was removed in python 3.12 -->
             <requirement type="package" version="3.11">python</requirement>
         </requirements>
     </xml>

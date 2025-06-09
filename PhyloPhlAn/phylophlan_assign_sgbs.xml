@@ -23,8 +23,12 @@
 				#if $reference.database.element_identifier != $sanitized_name or $sanitized_name[-4:] != ".tar"
 					exit 1 &&
 				#end if
-				ln -s '$reference.database' 'database/${sanitized_name}' &&
 				#set $database_name = $sanitized_name[:-4]
+				ln -s '$reference.database' 'database/${sanitized_name}' &&
+                cd database &&
+                tar -xf '${sanitized_name}' &&
+                md5sum '${sanitized_name}' > '${database_name}.md5' &&
+                cd .. &&
 			#end if
 		#end if
 		
@@ -76,19 +80,31 @@
             </param>
 			<when value="closest">
 				<param argument="-n" type="integer" value="1" label="How many SGBs to assign to each input genome"/>
-				<param name="assign_all" type="boolean" label="Assign all SGBs"/>
+				<param name="assign_all" type="boolean" label="Assign all SGBs instead" argument="-n all"/>
 			</when>
 			<when value="taxonomy"/> <!-- Todo -->
 			<when value="matrix"/> <!-- Todo -->
 		</conditional>
 	</inputs>
     <outputs>
-		<data name="output" format="txt">
-			
-		</data>
+		<data name="output" format="tabular" from_work_dir="output.tsv"/>
     </outputs>
     <tests>
-	    
+	    <test expect_num_outputs="1">
+            <param name="input">
+                <collection type="list">
+                    <element name="CM_ethiopia__CM_A06_M0_18__bin.34.fna" ftype="fasta" value="CM_ethiopia__CM_A06_M0_18__bin.34.fna"/>
+                </collection>
+            </param>
+            <conditional name="reference">
+                <param name="source" value="history"/>
+                <param name="database" value="ethiopia_tutorial.tar"/>
+            </conditional>
+            <conditional name="analysis">
+                <param name="type" value="closest"/>
+            </conditional>
+            <output name="output" file="output.tsv" compare="diff"/>
+        </test>
     </tests>
     <help><![CDATA[
 The phylophlan_assign_sgbs.py script assigns the SGB and taxonomy to a given set of input genomes. Outputs can be of
