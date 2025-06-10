@@ -2,33 +2,33 @@
     <description>
          Filter correlation and p-value table into sparse matrices
     </description>
-	<macros>
+    <macros>
         <import>macros.xml</import>
     </macros>
     <expand macro="biotools"/>
-	<expand macro="requirements"/>
+    <expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
-		fastspar_reduce
-			--correlation_table $correlation_table
-			--pvalue_table $pvalue_table
-			--correlation $correlation
-			--pvalue $pvalue
-			--output_prefix sparse
-		 && cp sparse_filtered_correlation.tsv $correlations
-		 && cp sparse_filtered_pvalue.tsv  $pvalues
+        fastspar_reduce
+            --correlation_table $correlation_table
+            --pvalue_table $pvalue_table
+            --correlation $correlation
+            --pvalue $pvalue
+            --output_prefix sparse
+         && cp sparse_filtered_correlation.tsv $correlations
+         && cp sparse_filtered_pvalue.tsv  $pvalues
     ]]></command>
     <inputs>
-		<param argument="--correlation_table" type="data" format="tabular" label="Correlation table"/>
-		<param argument="--pvalue_table" type="data" format="tabular" label="P-value table"/>
-		<param argument="--correlation" type="float" value="0.1" label="Absolute correlation threshold"/>
-		<param argument="--pvalue" type="float" value="0.05" label="P-value threshold"/>
-	</inputs>
+        <param argument="--correlation_table" type="data" format="tabular" label="Correlation table"/>
+        <param argument="--pvalue_table" type="data" format="tabular" label="P-value table"/>
+        <param argument="--correlation" type="float" value="0.1" label="Absolute correlation threshold"/>
+        <param argument="--pvalue" type="float" value="0.05" label="P-value threshold"/>
+    </inputs>
     <outputs>
-		<data name="correlations" format="tabular" label="${tool.name} on ${on_string}: filtered_correlations.tsv"/>
-		<data name="pvalues" format="tabular" label="${tool.name} on ${on_string}: filtered_pvalues.tsv"/>
+        <data name="correlations" format="tabular" label="${tool.name} on ${on_string}: filtered_correlations.tsv"/>
+        <data name="pvalues" format="tabular" label="${tool.name} on ${on_string}: filtered_pvalues.tsv"/>
     </outputs>
     <tests>
-		<test expect_num_outputs="2">
+        <test expect_num_outputs="2">
             <param name="correlation_table" ftype="tabular" value="fake_data_cor.tsv"/>
             <param name="pvalue_table" ftype="tabular" value="pvalues.tsv"/>
             <output name="correlations" file="filtered_correlations.tsv" compare="diff"/>
