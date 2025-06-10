@@ -9,13 +9,13 @@
     <expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
         fastspar_reduce
-            --correlation_table $correlation_table
-            --pvalue_table $pvalue_table
+            --correlation_table '$correlation_table'
+            --pvalue_table '$pvalue_table'
             --correlation $correlation
             --pvalue $pvalue
             --output_prefix sparse
-         && cp sparse_filtered_correlation.tsv $correlations
-         && cp sparse_filtered_pvalue.tsv  $pvalues
+         && cp sparse_filtered_correlation.tsv '$correlations'
+         && cp sparse_filtered_pvalue.tsv  '$pvalues'
     ]]></command>
     <inputs>
         <param argument="--correlation_table" type="data" format="tabular" label="Correlation table"/>

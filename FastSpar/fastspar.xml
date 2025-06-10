@@ -9,13 +9,13 @@
     <expand macro="requirements"/>
     <command detect_errors="exit_code"><![CDATA[
         fastspar
-            --otu_table $otu_table
+            --otu_table '$otu_table'
             --iterations $iterations
             --exclude_iterations $exclude_iterations
             --threshold $threshold
             --seed $seed
-            --correlation $correlation
-            --covariance $covariance
+            --correlation '$correlation'
+            --covariance '$covariance'
             --threads \${GALAXY_SLOTS:-1}
             --yes
     ]]></command>

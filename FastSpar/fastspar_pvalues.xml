@@ -10,7 +10,7 @@
     <command detect_errors="exit_code"><![CDATA[
         mkdir bootstrap_counts
      && fastspar_bootstrap
-            --otu_table $otu_table
+            --otu_table '$otu_table'
             --number $number
             --prefix bootstrap_counts/data
             --seed $seed
@@ -30,8 +30,8 @@
             ::: bootstrap_counts/*
         
      && fastspar_pvalues
-            --otu_table $otu_table
-            --correlation $correlation
+            --otu_table '$otu_table'
+            --correlation '$correlation'
             --prefix bootstrap_correlation/cor_data_
             --permutations $number
             $pseudo

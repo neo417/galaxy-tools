@@ -37,14 +37,14 @@
             -o output
             --database_folder database
             #if $analysis.type == "closest"
-                -d $database_name
+                -d '$database_name'
                 #if $analysis.assign_all
                     -n all
                 #else
                     -n $analysis.n
                 #end if
             #else if $analysis.type == "taxonomy"
-                -d $database_name
+                -d '$database_name'
                 --add_ggb_fgb
             #else if $analysis.type == "matrix"
                 --only_input
