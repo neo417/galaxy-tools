@@ -65,6 +65,7 @@ What it does
 
 FastSpar is a C++ implementation of the SparCC algorithm for estimating correlations from compositional data.
 This tool performs the **initial correlation and covariance matrix estimation** as the first step in the FastSpar pipeline.
+**If you also want to estimate p-values** you might want to use `fastspar_pvalues` with "Recalculate the correlation matrix".
 
 Required Inputs
 ===============
