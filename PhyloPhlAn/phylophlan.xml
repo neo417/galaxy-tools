@@ -9,6 +9,7 @@
     <expand macro="requirements_phylophlan"/>
     <required_files>
         <include path="validate_mapping_file.py"/>
+        <include path="test-data/phylophlan.tsv"/>
     </required_files>
     <command detect_errors="exit_code"><![CDATA[
         #import re
@@ -103,7 +104,12 @@
         sed -i "\%program_name.*astral%s%=.*%= `which astral`%" config.cfg &&
         
         #if "supertree" in $config.analysis.value
-            python '${__tool_directory__}/validate_mapping_file.py' '$config.maas' &&
+            #if $config.maas.source == "history"
+                #set $maas_file = $config.maas.models
+            #else
+                #set $maas_file = '${__tool_directory__}/test-data/phylophlan.tsv'
+            #end if
+            python '${__tool_directory__}/validate_mapping_file.py' '$maas_file' &&
         #end if
         
         phylophlan
@@ -116,7 +122,7 @@
             $accuracy
             
             #if "supertree" in $config.analysis.value
-                --maas '$config.maas'
+                --maas '$maas_file'
             #end if
             
             --min_num_proteins $quality.min_num_proteins
@@ -457,7 +463,9 @@
             <param name="database" ftype="fasta" value="phylophlan_markers_filtered.faa.gz"/>
             <conditional name="config">
                 <param name="analysis" value="custom_supertree"/>
-                <param name="maas" value="phylophlan.tsv"/>
+                <conditional name="maas">
+                    <param name="source" value="default"/> <!-- phylophlan.tsv -->
+                </conditional>
                 <conditional name="db">
                     <param name="type" value="a"/>
                     <param name="db_aa" value="diamond"/>
