@@ -107,9 +107,9 @@
             #if $config.maas.source == "history"
                 #set $maas_file = $config.maas.models
             #else
-                #set $maas_file = '${__tool_directory__}/test-data/phylophlan.tsv'
+                #set $maas_file = $__tool_directory__ + '/test-data/phylophlan.tsv'
             #end if
-            python '${__tool_directory__}/validate_mapping_file.py' '$maas_file' &&
+            python '$__tool_directory__/validate_mapping_file.py' '$maas_file' &&
         #end if
         
         phylophlan
