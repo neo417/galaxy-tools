@@ -16,7 +16,7 @@ PhyloPhlAn is an integrated pipeline for large-scale phylogenetic profiling of g
 
 ### Galaxy Tools
 
-- PhyloPhlAn (phylophlan and phylophlan_write_config_file) - **Almost ready**
+- PhyloPhlAn (phylophlan and phylophlan_write_config_file) - **In final review**
 
   The main PhyloPhlan script for running the Supermatrix and Supertree pipelines.  
   The wrapper combines the configuration and analysis steps into one tool.
@@ -27,12 +27,12 @@ PhyloPhlAn is an integrated pipeline for large-scale phylogenetic profiling of g
   - Some special options for working with the included databases are not yet implemented.
   - Input fasta files must either have the extensions '.fna' or '.faa' in the galaxy history in order for the tool to detect them.
 
-- Assign SGBs (phylophlan_assign_sgbs) - **Stalled**
+- Assign SGBs (phylophlan_assign_sgbs) - **In progress**
   
   This script reports the closest species-level genome bins, for each bin from a metagenomic assembly analysis.  
-  The wrapper is mostly finished, but I am missing testing data for the submission. It also does not do anything without a data manager to provide the SGB database.
+  It does not do anything without a data manager to provide the SGB database, which is not finished.
 
-- Visualize metagenomic SGBs (phylophlan_draw_metagenomic) - **Almost Ready**
+- Visualize metagenomic SGBs (phylophlan_draw_metagenomic) - **Missing Help section**
   
   Used to visualize the results from phylophlan_assign_sgbs. It is finished, but not useful on its own.
 
@@ -48,7 +48,7 @@ the administrator of your Galaxy instance should also install the data managers 
 
 A PhyloPhlAn analysis can take a long time and requires quite a bit of computational recources.
 
-## FastSpar (WIP)
+## FastSpar (In final review)
 
 https://github.com/scwatts/fastspar
 
