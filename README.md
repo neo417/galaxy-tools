@@ -27,7 +27,7 @@ PhyloPhlAn is an integrated pipeline for large-scale phylogenetic profiling of g
   - Some special options for working with the included databases are not yet implemented.
   - Input fasta files must either have the extensions '.fna' or '.faa' in the galaxy history in order for the tool to detect them.
 
-- Assign SGBs (phylophlan_assign_sgbs) - **In progress**
+- Assign SGBs (phylophlan_assign_sgbs) - **Stalled**
   
   This script reports the closest species-level genome bins, for each bin from a metagenomic assembly analysis.  
   It does not do anything without a data manager to provide the SGB database, which is not finished.
